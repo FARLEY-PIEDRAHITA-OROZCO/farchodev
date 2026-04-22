@@ -1,0 +1,21 @@
+16:42:30.449 Running build in Washington, D.C., USA (East) – iad1
+16:42:30.450 Build machine configuration: 2 cores, 8 GB
+16:42:30.595 Cloning github.com/FARLEY-PIEDRAHITA-OROZCO/farchodev (Branch: main, Commit: cc7e4bf)
+16:42:30.596 Previous build caches not available.
+16:42:30.881 Cloning completed: 286.000ms
+16:42:30.957 Found .vercelignore (repository root)
+16:42:30.962 Removed 28 ignored files defined in .vercelignore
+16:42:30.963   /.emergent/emergent.yml
+16:42:30.963   /.emergent/markers/.bootstrap-complete
+16:42:30.963   /.emergent/markers/.restic-restore-verified
+16:42:30.963   /.git/config
+16:42:30.963   /.git/description
+16:42:30.963   /.git/FETCH_HEAD
+16:42:30.963   /.git/HEAD
+16:42:30.963   /.git/hooks/applypatch-msg.sample
+16:42:30.963   /.git/hooks/commit-msg.sample
+16:42:30.963   /.git/hooks/fsmonitor-watchman.sample
+16:42:31.295 Running "vercel build"
+16:42:32.033 Vercel CLI 51.6.1
+16:42:32.178 Error: The pattern "index.py" defined in `functions` doesn't match any Serverless Functions inside the `api` directory.
+16:42:32.178 Learn More: https://vercel.link/unmatched-function-pattern
