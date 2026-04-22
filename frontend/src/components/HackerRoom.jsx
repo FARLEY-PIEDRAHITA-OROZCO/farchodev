@@ -130,86 +130,94 @@ function makePictureTexture() {
   c.width = 320;
   c.height = 400;
   const ctx = c.getContext("2d");
-  // Clean tech poster: dark panel with geometric composition + tagline
-  const g = ctx.createLinearGradient(0, 0, 0, 400);
-  g.addColorStop(0, "#0f172a");
-  g.addColorStop(1, "#111b2e");
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, 320, 400);
 
-  // Subtle border inset
-  ctx.strokeStyle = "rgba(34,211,238,0.25)";
-  ctx.lineWidth = 2;
-  ctx.strokeRect(14, 14, 292, 372);
+  // Sky gradient (top portion)
+  const sky = ctx.createLinearGradient(0, 0, 0, 280);
+  sky.addColorStop(0, "#0f172a");
+  sky.addColorStop(0.6, "#1e3a8a");
+  sky.addColorStop(1, "#0891b2");
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, 320, 280);
 
-  // Concentric cyan arcs (radar rings)
-  ctx.lineWidth = 1.5;
-  for (let r = 40; r < 180; r += 28) {
-    ctx.strokeStyle = `rgba(34,211,238,${0.15 + (180 - r) / 400})`;
+  // Stars / dots in the sky
+  for (let i = 0; i < 30; i++) {
+    const x = Math.random() * 320;
+    const y = Math.random() * 160;
+    const size = Math.random() * 1.5 + 0.5;
+    ctx.fillStyle = `rgba(255,255,255,${0.4 + Math.random() * 0.6})`;
     ctx.beginPath();
-    ctx.arc(160, 180, r, 0, Math.PI * 2);
-    ctx.stroke();
+    ctx.arc(x, y, size, 0, Math.PI * 2);
+    ctx.fill();
   }
-  // Center node
-  ctx.fillStyle = "#22d3ee";
+
+  // Moon / circle
+  ctx.fillStyle = "#f1f5f9";
   ctx.beginPath();
-  ctx.arc(160, 180, 5, 0, Math.PI * 2);
+  ctx.arc(220, 90, 28, 0, Math.PI * 2);
   ctx.fill();
-  // Radar sweep
-  ctx.fillStyle = "rgba(34,211,238,0.18)";
+  ctx.fillStyle = "rgba(148,163,184,0.4)";
   ctx.beginPath();
-  ctx.moveTo(160, 180);
-  ctx.arc(160, 180, 170, -Math.PI / 2.4, -Math.PI / 2.4 + 0.6);
+  ctx.arc(228, 85, 8, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Mountain ranges (back) - darker
+  ctx.fillStyle = "#0e1a33";
+  ctx.beginPath();
+  ctx.moveTo(0, 280);
+  ctx.lineTo(60, 190);
+  ctx.lineTo(120, 230);
+  ctx.lineTo(180, 160);
+  ctx.lineTo(250, 210);
+  ctx.lineTo(320, 180);
+  ctx.lineTo(320, 280);
   ctx.closePath();
   ctx.fill();
-  // Scattered detected points
-  const points = [
-    [100, 90],
-    [230, 130],
-    [70, 220],
-    [245, 240],
-    [190, 80],
-    [130, 270],
-    [220, 200],
-  ];
-  points.forEach(([px, py]) => {
-    ctx.fillStyle = "#f59e0b";
-    ctx.beginPath();
-    ctx.arc(px, py, 3, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = "rgba(245,158,11,0.5)";
-    ctx.beginPath();
-    ctx.arc(px, py, 8, 0, Math.PI * 2);
-    ctx.stroke();
-  });
 
-  // Corner tick marks
-  ctx.strokeStyle = "rgba(34,211,238,0.6)";
-  ctx.lineWidth = 2;
-  const ticks = [
-    [22, 22, 40, 22, 22, 40],
-    [298, 22, 280, 22, 298, 40],
-    [22, 378, 40, 378, 22, 360],
-    [298, 378, 280, 378, 298, 360],
-  ];
-  ticks.forEach(([x1, y1, x2, y2, x3, y3]) => {
-    ctx.beginPath();
-    ctx.moveTo(x2, y2);
-    ctx.lineTo(x1, y1);
-    ctx.lineTo(x3, y3);
-    ctx.stroke();
-  });
+  // Mountain range (front) - cyan tint
+  ctx.fillStyle = "#155e75";
+  ctx.beginPath();
+  ctx.moveTo(0, 300);
+  ctx.lineTo(50, 250);
+  ctx.lineTo(100, 280);
+  ctx.lineTo(160, 230);
+  ctx.lineTo(220, 270);
+  ctx.lineTo(280, 240);
+  ctx.lineTo(320, 260);
+  ctx.lineTo(320, 300);
+  ctx.closePath();
+  ctx.fill();
 
-  // Title + tagline
-  ctx.fillStyle = "#e2e8f0";
-  ctx.font = "bold 28px 'JetBrains Mono', monospace";
-  ctx.fillText("THINK.", 30, 355);
+  // Snow caps on back mountains (thin)
+  ctx.fillStyle = "rgba(255,255,255,0.35)";
+  ctx.beginPath();
+  ctx.moveTo(55, 198);
+  ctx.lineTo(60, 190);
+  ctx.lineTo(65, 198);
+  ctx.closePath();
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(175, 168);
+  ctx.lineTo(180, 160);
+  ctx.lineTo(185, 168);
+  ctx.closePath();
+  ctx.fill();
+
+  // Foreground / ground (bottom panel with title)
+  ctx.fillStyle = "#0a1425";
+  ctx.fillRect(0, 300, 320, 100);
+
+  // Subtle horizon glow line
+  ctx.fillStyle = "rgba(34,211,238,0.3)";
+  ctx.fillRect(0, 298, 320, 2);
+
+  // Title
+  ctx.fillStyle = "#f8fafc";
+  ctx.font = "bold 26px 'Inter', sans-serif";
+  ctx.fillText("Quiet Code", 26, 345);
   ctx.fillStyle = "#22d3ee";
-  ctx.font = "bold 28px 'JetBrains Mono', monospace";
-  ctx.fillText("BREAK.", 138, 355);
-  ctx.fillStyle = "#94a3b8";
-  ctx.font = "12px 'JetBrains Mono', monospace";
-  ctx.fillText("// QA · SECURITY · CODE", 30, 378);
+  ctx.font = "11px 'JetBrains Mono', monospace";
+  ctx.fillText("// focus · build · repeat", 26, 370);
+
   return new THREE.CanvasTexture(c);
 }
 
