@@ -1,61 +1,45 @@
-16:52:04.355 Running build in Washington, D.C., USA (East) – iad1
-16:52:04.356 Build machine configuration: 2 cores, 8 GB
-16:52:04.477 Cloning github.com/FARLEY-PIEDRAHITA-OROZCO/farchodev (Branch: main, Commit: d580b40)
-16:52:04.478 Previous build caches not available.
-16:52:04.803 Cloning completed: 326.000ms
-16:52:04.835 Found .vercelignore (repository root)
-16:52:04.840 Removed 28 ignored files defined in .vercelignore
-16:52:04.841   /.emergent/emergent.yml
-16:52:04.841   /.emergent/markers/.bootstrap-complete
-16:52:04.841   /.emergent/markers/.restic-restore-verified
-16:52:04.841   /.git/config
-16:52:04.841   /.git/description
-16:52:04.841   /.git/FETCH_HEAD
-16:52:04.841   /.git/HEAD
-16:52:04.841   /.git/hooks/applypatch-msg.sample
-16:52:04.841   /.git/hooks/commit-msg.sample
-16:52:04.841   /.git/hooks/fsmonitor-watchman.sample
-16:52:05.104 Running "vercel build"
-16:52:05.814 Vercel CLI 51.6.1
-16:52:06.368 Running "install" command: `uv pip install -r requirements.txt --system`...
-16:52:07.756 Using Python 3.9.16 environment at: /usr
-16:52:08.005 Resolved 15 packages in 232ms
-16:52:08.016 Downloading pydantic-core (2.0MiB)
-16:52:08.071  Downloaded pydantic-core
-16:52:08.084 Prepared 15 packages in 78ms
-16:52:08.085 warning: Failed to hardlink files; falling back to full copy. This may lead to degraded performance.
-16:52:08.085          If the cache and target directories are on different filesystems, hardlinking may not be supported.
-16:52:08.085          If this is intentional, set `export UV_LINK_MODE=copy` or use `--link-mode=copy` to suppress this warning.
-16:52:08.136 Installed 15 packages in 51ms
-16:52:08.136  + annotated-types==0.7.0
-16:52:08.137  + anyio==4.12.1
-16:52:08.137  + dnspython==2.7.0
-16:52:08.137  + email-validator==2.3.0
-16:52:08.137  + exceptiongroup==1.3.1
-16:52:08.138  + fastapi==0.110.1
-16:52:08.138  + idna==3.13
-16:52:08.138  + motor==3.3.1
-16:52:08.139  + pydantic==2.13.3
-16:52:08.139  + pydantic-core==2.46.3
-16:52:08.139  + pymongo==4.5.0
-16:52:08.139  + python-dotenv==1.2.1
-16:52:08.140  + starlette==0.37.2
-16:52:08.140  + typing-extensions==4.15.0
-16:52:08.140  + typing-inspection==0.4.2
-16:52:08.609 
-16:52:08.609 > farchodev@1.0.0 build
-16:52:08.610 > cd frontend && npm run build
-16:52:08.610 
-16:52:08.786 
-16:52:08.787 > frontend@0.1.0 build
-16:52:08.787 > craco build
-16:52:08.787 
-16:52:08.792 sh: line 1: craco: command not found
-16:52:08.795 npm error Lifecycle script `build` failed with error:
-16:52:08.796 npm error code 127
-16:52:08.796 npm error path /vercel/path0/frontend
-16:52:08.797 npm error workspace frontend@0.1.0
-16:52:08.797 npm error location /vercel/path0/frontend
-16:52:08.797 npm error command failed
-16:52:08.798 npm error command sh -c craco build
-16:52:08.821 Error: Command "npm run build" exited with 127
+17:09:46.650 Running build in Washington, D.C., USA (East) – iad1
+17:09:46.651 Build machine configuration: 2 cores, 8 GB
+17:09:46.760 Cloning github.com/FARLEY-PIEDRAHITA-OROZCO/farchodev (Branch: main, Commit: f99d65c)
+17:09:46.761 Previous build caches not available.
+17:09:47.040 Cloning completed: 280.000ms
+17:09:47.071 Found .vercelignore (repository root)
+17:09:47.076 Removed 28 ignored files defined in .vercelignore
+17:09:47.076   /.emergent/emergent.yml
+17:09:47.076   /.emergent/markers/.bootstrap-complete
+17:09:47.077   /.emergent/markers/.restic-restore-verified
+17:09:47.077   /.git/config
+17:09:47.077   /.git/description
+17:09:47.077   /.git/FETCH_HEAD
+17:09:47.077   /.git/HEAD
+17:09:47.077   /.git/hooks/applypatch-msg.sample
+17:09:47.077   /.git/hooks/commit-msg.sample
+17:09:47.077   /.git/hooks/fsmonitor-watchman.sample
+17:09:47.303 Running "vercel build"
+17:09:48.050 Vercel CLI 51.6.1
+17:09:48.322 No Python version specified in .python-version, pyproject.toml, or Pipfile.lock. Using python version: 3.12
+17:09:48.371 Using uv 0.10.11
+17:09:48.377 Creating virtual environment at "/vercel/path0/backend/.vercel/python/.venv"...
+17:09:48.919 Running "install" command: `npm install`...
+17:10:19.035 
+17:10:19.036 added 1527 packages, and audited 1529 packages in 30s
+17:10:19.037 
+17:10:19.037 287 packages are looking for funding
+17:10:19.037   run `npm fund` for details
+17:10:19.062 
+17:10:19.063 28 vulnerabilities (9 low, 5 moderate, 14 high)
+17:10:19.063 
+17:10:19.064 To address issues that do not require attention, run:
+17:10:19.064   npm audit fix
+17:10:19.065 
+17:10:19.065 To address all issues (including breaking changes), run:
+17:10:19.066   npm audit fix --force
+17:10:19.066 
+17:10:19.066 Run `npm audit` for details.
+17:10:19.126 Running "npm run build"
+17:10:19.245 npm error Missing script: "build"
+17:10:19.245 npm error
+17:10:19.246 npm error To see a list of scripts, run:
+17:10:19.246 npm error   npm run
+17:10:19.247 npm error A complete log of this run can be found in: /vercel/.npm/_logs/2026-04-22T22_10_19_194Z-debug-0.log
+17:10:19.255 Error: Command "npm run build" exited with 1

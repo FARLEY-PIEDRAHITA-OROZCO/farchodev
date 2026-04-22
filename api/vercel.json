@@ -1,4 +1,6 @@
 {
+  "framework": null,
   "installCommand": "uv pip install -r requirements.txt --system",
-  "framework": null
+  "buildCommand": "",
+  "runtime": "@vercel/python@4.3.1"
 }
