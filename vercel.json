@@ -1,18 +1,16 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
   "buildCommand": "npm run build",
   "outputDirectory": "build",
   "installCommand": "npm install",
   "framework": null,
-  "rootDirectory": "frontend",
   "functions": {
     "api/index.py": {
       "runtime": "@vercel/python@4.3.1",
       "maxDuration": 15
     }
   },
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api" }
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/index.py" }
   ]
 }
