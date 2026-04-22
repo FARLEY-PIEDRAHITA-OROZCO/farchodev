@@ -1133,26 +1133,222 @@ export default function HackerRoom() {
     clockGroup.add(centerDot);
     scene.add(clockGroup);
 
-    // ---------- Picture frame on left wall ----------
-    const picTex = makePictureTexture();
-    const pictureFrameMat = new THREE.MeshStandardMaterial({
-      color: 0x0f172a,
-      roughness: 0.4,
-      metalness: 0.2,
+    // ---------- Mini library (wall-mounted shelves on left wall) ----------
+    const shelfGroup = new THREE.Group();
+    const shelfMat = new THREE.MeshStandardMaterial({
+      color: 0x4a3528,
+      roughness: 0.8,
+      metalness: 0.05,
     });
-    const picBorder = new THREE.Mesh(
-      new THREE.BoxGeometry(0.1, 1.4, 1.1),
-      pictureFrameMat
+    const shelfSupportMat = new THREE.MeshStandardMaterial({
+      color: 0x2a1f18,
+      roughness: 0.85,
+    });
+
+    const SHELF_W = 1.6; // along z-axis (depth on wall)
+    const SHELF_D = 0.42; // extends into room (x-axis)
+    const SHELF_H = 0.05;
+    const SHELF_X = -3.77; // near left wall (wall at -4)
+    const SHELF_Z_CENTER = -0.4;
+    const shelfYs = [3.2, 2.5, 1.8];
+
+    shelfYs.forEach((y, idx) => {
+      // Shelf plank
+      const shelf = new THREE.Mesh(
+        new THREE.BoxGeometry(SHELF_D, SHELF_H, SHELF_W),
+        shelfMat
+      );
+      shelf.position.set(SHELF_X, y, SHELF_Z_CENTER);
+      shelf.castShadow = true;
+      shelf.receiveShadow = true;
+      shelfGroup.add(shelf);
+
+      // Two L-brackets under each shelf
+      [-1, 1].forEach((side) => {
+        const bracket = new THREE.Mesh(
+          new THREE.BoxGeometry(0.14, 0.14, 0.03),
+          shelfSupportMat
+        );
+        bracket.position.set(
+          SHELF_X + 0.05,
+          y - 0.1,
+          SHELF_Z_CENTER + side * 0.6
+        );
+        shelfGroup.add(bracket);
+      });
+    });
+
+    // Populate shelves with books & trinkets
+    const bookPalette = [
+      0x1e40af, // navy
+      0x991b1b, // burgundy
+      0x0f766e, // teal
+      0x7c2d12, // brown
+      0xb45309, // amber
+      0x064e3b, // deep green
+      0x4c1d95, // deep purple
+      0xeab308, // yellow
+      0xe2e8f0, // off-white
+      0x1e293b, // charcoal
+    ];
+
+    // Helper: add a book at position
+    const addBook = (y, z, { h, w, tilt = 0, color, leaning = false }) => {
+      const mat = new THREE.MeshStandardMaterial({
+        color,
+        roughness: 0.78,
+        metalness: 0.05,
+      });
+      const book = new THREE.Mesh(new THREE.BoxGeometry(0.2, h, w), mat);
+      book.castShadow = true;
+      // Place on top of shelf
+      book.position.set(SHELF_X, y + SHELF_H / 2 + h / 2, z);
+      if (leaning) {
+        book.rotation.z = tilt;
+      }
+      // Thin spine stripe (lighter) on top for detail
+      const stripe = new THREE.Mesh(
+        new THREE.BoxGeometry(0.21, 0.015, w * 0.8),
+        new THREE.MeshStandardMaterial({
+          color: 0xf8fafc,
+          roughness: 0.6,
+        })
+      );
+      stripe.position.y = h / 2 - 0.04;
+      book.add(stripe);
+      shelfGroup.add(book);
+      return book;
+    };
+
+    // --- Top shelf: row of upright books + small trophy ---
+    let z = -1.05;
+    [
+      { h: 0.38, w: 0.09, color: bookPalette[0] },
+      { h: 0.42, w: 0.08, color: bookPalette[8] },
+      { h: 0.35, w: 0.11, color: bookPalette[1] },
+      { h: 0.45, w: 0.09, color: bookPalette[2] },
+      { h: 0.4, w: 0.1, color: bookPalette[7] },
+      { h: 0.38, w: 0.08, color: bookPalette[3] },
+      { h: 0.43, w: 0.09, color: bookPalette[6] },
+    ].forEach((b) => {
+      addBook(3.2, z + b.w / 2, b);
+      z += b.w + 0.005;
+    });
+    // Trophy at end of shelf
+    const trophyBase = new THREE.Mesh(
+      new THREE.BoxGeometry(0.15, 0.05, 0.15),
+      new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.6 })
     );
-    picBorder.position.set(-3.89, 2.5, -0.5);
-    scene.add(picBorder);
-    const picCanvas = new THREE.Mesh(
-      new THREE.PlaneGeometry(1, 1.3),
-      new THREE.MeshBasicMaterial({ map: picTex })
+    trophyBase.position.set(SHELF_X, 3.25, 0.55);
+    shelfGroup.add(trophyBase);
+    const trophyCup = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.05, 0.03, 0.18, 12),
+      new THREE.MeshStandardMaterial({
+        color: 0xeab308,
+        metalness: 0.85,
+        roughness: 0.25,
+      })
     );
-    picCanvas.rotation.y = Math.PI / 2;
-    picCanvas.position.set(-3.84, 2.5, -0.5);
-    scene.add(picCanvas);
+    trophyCup.position.set(SHELF_X, 3.37, 0.55);
+    shelfGroup.add(trophyCup);
+    const trophyHandleL = new THREE.Mesh(
+      new THREE.TorusGeometry(0.04, 0.01, 6, 12, Math.PI),
+      new THREE.MeshStandardMaterial({
+        color: 0xeab308,
+        metalness: 0.85,
+        roughness: 0.25,
+      })
+    );
+    trophyHandleL.position.set(SHELF_X - 0.05, 3.39, 0.55);
+    trophyHandleL.rotation.z = Math.PI / 2;
+    shelfGroup.add(trophyHandleL);
+    const trophyHandleR = trophyHandleL.clone();
+    trophyHandleR.position.set(SHELF_X + 0.05, 3.39, 0.55);
+    trophyHandleR.rotation.z = -Math.PI / 2;
+    shelfGroup.add(trophyHandleR);
+
+    // --- Middle shelf: some upright, some leaning, and a small figurine (rubik's cube) ---
+    z = -1.05;
+    [
+      { h: 0.38, w: 0.09, color: bookPalette[4] },
+      { h: 0.4, w: 0.09, color: bookPalette[0] },
+      { h: 0.36, w: 0.1, color: bookPalette[2] },
+      { h: 0.33, w: 0.09, color: bookPalette[9], leaning: true, tilt: 0.22 },
+      { h: 0.33, w: 0.09, color: bookPalette[1], leaning: true, tilt: 0.22 },
+    ].forEach((b) => {
+      addBook(2.5, z + b.w / 2, b);
+      z += b.w + 0.005;
+    });
+    // Horizontal stack (3 books lying flat)
+    const stackColors = [bookPalette[5], bookPalette[7], bookPalette[0]];
+    stackColors.forEach((col, i) => {
+      const m = new THREE.MeshStandardMaterial({ color: col, roughness: 0.78 });
+      const flat = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.06, 0.32), m);
+      flat.position.set(SHELF_X, 2.56 + i * 0.07, -0.25);
+      flat.castShadow = true;
+      shelfGroup.add(flat);
+    });
+    // Rubik's cube (small)
+    const cubeColors = [0xef4444, 0x22c55e, 0x3b82f6, 0xeab308, 0xf97316, 0xffffff];
+    const cubeMats = cubeColors.map(
+      (c) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.6 })
+    );
+    const rubik = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.22, 0.22), cubeMats);
+    rubik.position.set(SHELF_X, 2.63, 0.55);
+    rubik.rotation.y = 0.25;
+    rubik.castShadow = true;
+    // Cube grid lines (overlay via thin dark cubes) — simplified by using black edges
+    shelfGroup.add(rubik);
+
+    // --- Bottom shelf: tall books + small plant ---
+    z = -1.05;
+    [
+      { h: 0.5, w: 0.11, color: bookPalette[8] },
+      { h: 0.52, w: 0.1, color: bookPalette[0] },
+      { h: 0.48, w: 0.12, color: bookPalette[3] },
+      { h: 0.55, w: 0.1, color: bookPalette[6] },
+      { h: 0.5, w: 0.11, color: bookPalette[4] },
+      { h: 0.47, w: 0.1, color: bookPalette[2] },
+    ].forEach((b) => {
+      addBook(1.8, z + b.w / 2, b);
+      z += b.w + 0.005;
+    });
+    // Small succulent on end
+    const miniPot = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.1, 0.08, 0.18, 12),
+      new THREE.MeshStandardMaterial({ color: 0x78716c, roughness: 0.8 })
+    );
+    miniPot.position.set(SHELF_X, 1.92, 0.55);
+    shelfGroup.add(miniPot);
+    // Succulent leaves (small cones around center)
+    const succMat = new THREE.MeshStandardMaterial({
+      color: 0x4d7c0f,
+      roughness: 0.7,
+    });
+    for (let i = 0; i < 6; i++) {
+      const angle = (i / 6) * Math.PI * 2;
+      const leaf = new THREE.Mesh(
+        new THREE.ConeGeometry(0.04, 0.12, 6),
+        succMat
+      );
+      leaf.position.set(
+        SHELF_X + Math.cos(angle) * 0.05,
+        2.06,
+        0.55 + Math.sin(angle) * 0.05
+      );
+      leaf.rotation.z = Math.cos(angle) * 0.35;
+      leaf.rotation.x = Math.sin(angle) * 0.35;
+      shelfGroup.add(leaf);
+    }
+    // Center leaf pointing up
+    const centerLeaf = new THREE.Mesh(
+      new THREE.ConeGeometry(0.04, 0.14, 6),
+      succMat
+    );
+    centerLeaf.position.set(SHELF_X, 2.08, 0.55);
+    shelfGroup.add(centerLeaf);
+
+    scene.add(shelfGroup);
 
     // ---------- Sticky notes on back wall (left of window) ----------
     const notes = [
@@ -1492,7 +1688,6 @@ export default function HackerRoom() {
       curtainTex.dispose();
       screenTex.dispose();
       laptopTex.dispose();
-      picTex.dispose();
       skylineTex.dispose();
       scene.traverse((obj) => {
         if (obj.geometry) obj.geometry.dispose && obj.geometry.dispose();
