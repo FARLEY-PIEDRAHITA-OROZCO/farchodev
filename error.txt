@@ -1,0 +1,22 @@
+14:04:53.256 Running build in Washington, D.C., USA (East) – iad1
+14:04:53.257 Build machine configuration: 2 cores, 8 GB
+14:04:53.380 Cloning github.com/FARLEY-PIEDRAHITA-OROZCO/farchodev (Branch: main, Commit: 1a5fbf9)
+14:04:53.381 Previous build caches not available.
+14:04:53.660 Cloning completed: 280.000ms
+14:04:53.690 Found .vercelignore (repository root)
+14:04:53.695 Removed 28 ignored files defined in .vercelignore
+14:04:53.695   /.emergent/emergent.yml
+14:04:53.695   /.emergent/markers/.bootstrap-complete
+14:04:53.695   /.emergent/markers/.restic-restore-verified
+14:04:53.695   /.git/config
+14:04:53.695   /.git/description
+14:04:53.696   /.git/FETCH_HEAD
+14:04:53.696   /.git/HEAD
+14:04:53.696   /.git/hooks/applypatch-msg.sample
+14:04:53.696   /.git/hooks/commit-msg.sample
+14:04:53.696   /.git/hooks/fsmonitor-watchman.sample
+14:04:53.936 Running "vercel build"
+14:04:54.920 Vercel CLI 51.6.1
+14:04:55.498 Running "install" command: `cd frontend && npm install`...
+14:04:55.502 sh: line 1: cd: frontend: No such file or directory
+14:04:55.506 Error: Command "cd frontend && npm install" exited with 1
