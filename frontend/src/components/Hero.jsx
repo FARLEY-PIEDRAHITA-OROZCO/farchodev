@@ -1,5 +1,6 @@
 import React from "react";
 import Scene3D from "./Scene3D";
+import MatrixRain from "./MatrixRain";
 import { Button } from "./ui/button";
 import { ArrowDown, Download, Shield, Bug } from "lucide-react";
 import { profile } from "../data/mock";
@@ -90,8 +91,19 @@ export default function Hero() {
 
         {/* 3D Scene */}
         <div className="relative h-[420px] lg:h-[560px] w-full">
-          <div className="absolute inset-0 rounded-3xl border border-white/5 bg-gradient-to-br from-white/[0.02] to-transparent overflow-hidden">
-            <Scene3D />
+          <div className="absolute inset-0 rounded-3xl border border-white/5 bg-gradient-to-br from-[#060B1A] to-[#05070E] overflow-hidden">
+            <MatrixRain />
+            <div className="absolute inset-0">
+              <Scene3D />
+            </div>
+            {/* Scanline overlay */}
+            <div
+              className="absolute inset-0 pointer-events-none mix-blend-overlay opacity-30"
+              style={{
+                backgroundImage:
+                  "repeating-linear-gradient(to bottom, rgba(34,211,238,0.06) 0px, rgba(34,211,238,0.06) 1px, transparent 1px, transparent 3px)"
+              }}
+            />
           </div>
           {/* Corner decorations */}
           <div className="absolute top-3 left-3 w-8 h-8 border-l-2 border-t-2 border-cyan-400/60" />
@@ -99,8 +111,8 @@ export default function Hero() {
           <div className="absolute bottom-3 left-3 w-8 h-8 border-l-2 border-b-2 border-cyan-400/60" />
           <div className="absolute bottom-3 right-3 w-8 h-8 border-r-2 border-b-2 border-cyan-400/60" />
 
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 font-mono text-[10px] tracking-widest text-cyan-300/70 uppercase">
-            [ system online ]
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 font-mono text-[10px] tracking-widest text-cyan-300/80 uppercase bg-black/40 px-2 py-0.5 rounded">
+            [ network monitor · active ]
           </div>
         </div>
       </div>
