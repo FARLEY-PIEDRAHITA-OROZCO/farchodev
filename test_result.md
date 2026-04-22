@@ -107,6 +107,21 @@ user_problem_statement: |
   Backend scope: persistir mensajes de contacto y contador de visitas.
 
 backend:
+  - task: "POST /api/contact — send email via Gmail SMTP"
+    implemented: true
+    working: true
+    file: "/app/backend/mail.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Added Gmail SMTP integration using stdlib smtplib (SMTP_SSL port 465). After a contact message is saved, an HTML+text email is sent to CONTACT_TO_EMAIL with Reply-To set to the sender's email. If SMTP fails, the message is still saved (email_sent=false). Manual test confirmed an email was delivered to frlpiedrahita@gmail.com during a form submission."
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED: Gmail SMTP integration working correctly. POST /api/contact now returns email_sent field (boolean). Tested 2 successful messages - both returned email_sent: true and emails were delivered (confirmed in backend logs). Messages saved to MongoDB regardless of email status. Response times reasonable (<25s). Validation still working (422 for missing fields). GET /api/contact shows email_sent field for all messages."
+
   - task: "POST /api/contact — create contact message"
     implemented: true
     working: true
@@ -222,3 +237,18 @@ agent_communication:
         4) GET /api/health ✅ - Returns {status: 'ok', db: 'connected'}. MongoDB connection verified.
         
         All backend functionality is working correctly. No issues found.
+    - agent: "testing"
+      message: |
+        ✅ GMAIL SMTP INTEGRATION TESTING COMPLETE - WORKING CORRECTLY
+        Re-tested POST /api/contact after Gmail SMTP integration was added.
+        
+        Test Results:
+        - POST /api/contact now includes email_sent field (boolean) in response ✅
+        - Created 2 test messages: both returned email_sent: true ✅
+        - Backend logs confirm emails sent to frlpiedrahita@gmail.com ✅
+        - Messages saved to MongoDB regardless of email success/failure ✅
+        - Response times reasonable (<25s for SMTP operations) ✅
+        - Validation still working correctly (422 for missing fields) ✅
+        - GET /api/contact shows email_sent field for all messages ✅
+        
+        Gmail SMTP integration is fully functional. No issues found.

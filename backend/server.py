@@ -10,6 +10,8 @@ from typing import List, Optional
 import uuid
 from datetime import datetime, timezone
 
+from mail import send_contact_email
+
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / ".env")
@@ -55,6 +57,7 @@ class ContactMessage(BaseModel):
     subject: str = ""
     message: str
     created_at: datetime = Field(default_factory=utcnow)
+    email_sent: bool = False
 
 
 class ContactListResponse(BaseModel):
@@ -91,9 +94,20 @@ async def create_contact(payload: ContactCreate):
             subject=payload.subject or "",
             message=payload.message,
         )
+        # Try to send email; don't fail the request if SMTP has issues.
+        try:
+            msg.email_sent = await send_contact_email(
+                name=msg.name,
+                email=msg.email,
+                subject=msg.subject,
+                message=msg.message,
+            )
+        except Exception:
+            logging.exception("email send raised unexpectedly")
+            msg.email_sent = False
         await db.contact_messages.insert_one(msg.model_dump())
         return msg
-    except Exception as exc:
+    except Exception:
         logging.exception("failed to save contact message")
         raise HTTPException(status_code=500, detail="Failed to save message")
 
