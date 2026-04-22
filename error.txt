@@ -1,94 +1,94 @@
-14:38:30.448 Running build in Washington, D.C., USA (East) – iad1
-14:38:30.449 Build machine configuration: 2 cores, 8 GB
-14:38:30.564 Cloning github.com/FARLEY-PIEDRAHITA-OROZCO/farchodev (Branch: main, Commit: c8b3e79)
-14:38:30.565 Previous build caches not available.
-14:38:31.180 Cloning completed: 615.000ms
-14:38:31.209 Found .vercelignore (repository root)
-14:38:31.215 Removed 28 ignored files defined in .vercelignore
-14:38:31.215   /.emergent/emergent.yml
-14:38:31.216   /.emergent/markers/.bootstrap-complete
-14:38:31.216   /.emergent/markers/.restic-restore-verified
-14:38:31.216   /.git/config
-14:38:31.216   /.git/description
-14:38:31.216   /.git/FETCH_HEAD
-14:38:31.216   /.git/HEAD
-14:38:31.216   /.git/hooks/applypatch-msg.sample
-14:38:31.216   /.git/hooks/commit-msg.sample
-14:38:31.216   /.git/hooks/fsmonitor-watchman.sample
-14:38:31.471 Running "vercel build"
-14:38:32.181 Vercel CLI 51.6.1
-14:38:32.872 Running "install" command: `npm install`...
-14:39:50.837 npm warn deprecated @humanwhocodes/object-schema@2.0.3: Use @eslint/object-schema instead
-14:39:51.051 npm warn deprecated @humanwhocodes/config-array@0.13.0: Use @eslint/config-array instead
-14:39:51.054 npm warn deprecated rollup-plugin-terser@7.0.2: This package has been deprecated and is no longer maintained. Please use @rollup/plugin-terser
-14:39:51.093 npm warn deprecated sourcemap-codec@1.4.8: Please use @jridgewell/sourcemap-codec instead
-14:39:51.650 npm warn deprecated workbox-google-analytics@6.6.0: It is not compatible with newer versions of GA starting with v4, as long as you are using GAv3 it should be ok, but the package is not longer being maintained
-14:39:51.651 npm warn deprecated workbox-cacheable-response@6.6.0: workbox-background-sync@6.6.0
-14:39:51.846 npm warn deprecated stable@0.1.8: Modern JS already guarantees Array#sort() is a stable sort, so this library is deprecated. See the compatibility table on MDN: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort#browser_compatibility
-14:39:51.912 npm warn deprecated q@1.5.1: You or someone you depend on is using Q, the JavaScript Promise library that gave JavaScript developers strong feelings about promises. They can almost certainly migrate to the native JavaScript promise now. Thank you literally everyone for joining me in this bet against the odds. Be excellent to each other.
-14:39:51.913 npm warn deprecated
-14:39:51.913 npm warn deprecated (For a CapTP with native promises, see @endo/eventual-send and @endo/captp)
-14:39:52.666 npm warn deprecated whatwg-encoding@1.0.5: Use @exodus/bytes instead for a more spec-conformant and faster implementation
-14:39:52.767 npm warn deprecated abab@2.0.6: Use your platform's native atob() and btoa() methods instead
-14:39:52.821 npm warn deprecated domexception@2.0.1: Use your platform's native DOMException instead
-14:39:52.838 npm warn deprecated w3c-hr-time@1.0.2: Use your platform's native performance.now() and performance.timeOrigin.
-14:39:52.956 npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
-14:39:53.007 npm warn deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
-14:39:53.049 npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
-14:39:53.325 npm warn deprecated @babel/plugin-proposal-class-properties@7.18.6: This proposal has been merged to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-class-properties instead.
-14:39:53.326 npm warn deprecated @babel/plugin-proposal-numeric-separator@7.18.6: This proposal has been merged to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-numeric-separator instead.
-14:39:53.327 npm warn deprecated @babel/plugin-proposal-nullish-coalescing-operator@7.18.6: This proposal has been merged to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-nullish-coalescing-operator instead.
-14:39:53.339 npm warn deprecated @babel/plugin-proposal-optional-chaining@7.21.0: This proposal has been merged to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-optional-chaining instead.
-14:39:53.387 npm warn deprecated @babel/plugin-proposal-private-methods@7.18.6: This proposal has been merged to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-private-methods instead.
-14:39:55.988 npm warn deprecated @babel/plugin-proposal-private-property-in-object@7.21.11: This proposal has been merged to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-private-property-in-object instead.
-14:39:57.160 npm warn deprecated source-map@0.8.0-beta.0: The work that was done in this beta branch won't be included in future versions
-14:39:57.558 npm warn deprecated svgo@1.3.2: This SVGO version is no longer supported. Upgrade to v2.x.x.
-14:40:01.206 npm warn deprecated eslint@8.57.1: This version is no longer supported. Please see https://eslint.org/version-support for other options.
-14:40:05.850 
-14:40:05.851 added 1525 packages, and audited 1527 packages in 2m
-14:40:05.851 
-14:40:05.852 288 packages are looking for funding
-14:40:05.852   run `npm fund` for details
-14:40:05.875 
-14:40:05.876 26 vulnerabilities (9 low, 3 moderate, 14 high)
-14:40:05.876 
-14:40:05.877 To address issues that do not require attention, run:
-14:40:05.877   npm audit fix
-14:40:05.877 
-14:40:05.878 To address all issues (including breaking changes), run:
-14:40:05.878   npm audit fix --force
-14:40:05.878 
-14:40:05.881 Run `npm audit` for details.
-14:40:05.881 npm notice
-14:40:05.882 npm notice New minor version of npm available! 11.11.0 -> 11.12.1
-14:40:05.882 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.12.1
-14:40:05.882 npm notice To update run: npm install -g npm@11.12.1
-14:40:05.882 npm notice
-14:40:07.422 
-14:40:07.422 > frontend@0.1.0 build
-14:40:07.423 > DISABLE_ESLINT=true craco build
-14:40:07.423 
-14:40:08.317 craco:  *** Cannot find ESLint loader (eslint-loader). ***
-14:40:08.364 (node:188) [DEP0176] DeprecationWarning: fs.F_OK is deprecated, use fs.constants.F_OK instead
-14:40:08.364 (Use `node --trace-deprecation ...` to show where the warning was created)
-14:40:08.366 Creating an optimized production build...
-14:40:31.102 Failed to compile.
-14:40:31.102 
-14:40:31.103 [eslint] 
-14:40:31.103 src/components/HackerRoom.jsx
-14:40:31.103   Line 1680:5:  Definition for rule 'react-hooks/exhaustive-deps' was not found  react-hooks/exhaustive-deps
-14:40:31.103 
-14:40:31.103 src/hooks/useActiveSection.js
-14:40:31.104   Line 51:5:  Definition for rule 'react-hooks/exhaustive-deps' was not found  react-hooks/exhaustive-deps
-14:40:31.104 
-14:40:31.104 Search for the keywords to learn more about each error.
-14:40:31.104 
-14:40:31.104 
-14:40:31.165 npm error Lifecycle script `build` failed with error:
-14:40:31.165 npm error code 1
-14:40:31.165 npm error path /vercel/path0/frontend
-14:40:31.166 npm error workspace frontend@0.1.0
-14:40:31.166 npm error location /vercel/path0/frontend
-14:40:31.166 npm error command failed
-14:40:31.166 npm error command sh -c DISABLE_ESLINT=true craco build
-14:40:31.177 Error: Command "npm run build" exited with 1
+15:13:55.795 Running build in Washington, D.C., USA (East) – iad1
+15:13:55.796 Build machine configuration: 2 cores, 8 GB
+15:13:55.837 Cloning github.com/FARLEY-PIEDRAHITA-OROZCO/farchodev (Branch: main, Commit: bb1e810)
+15:13:55.840 Skipping build cache, deployment was triggered without cache.
+15:13:56.254 Cloning completed: 415.000ms
+15:13:56.288 Found .vercelignore (repository root)
+15:13:56.294 Removed 28 ignored files defined in .vercelignore
+15:13:56.294   /.emergent/emergent.yml
+15:13:56.294   /.emergent/markers/.bootstrap-complete
+15:13:56.294   /.emergent/markers/.restic-restore-verified
+15:13:56.294   /.git/config
+15:13:56.294   /.git/description
+15:13:56.294   /.git/FETCH_HEAD
+15:13:56.294   /.git/HEAD
+15:13:56.294   /.git/hooks/applypatch-msg.sample
+15:13:56.294   /.git/hooks/commit-msg.sample
+15:13:56.294   /.git/hooks/fsmonitor-watchman.sample
+15:13:56.562 Running "vercel build"
+15:13:57.416 Vercel CLI 51.6.1
+15:13:58.016 Running "install" command: `npm install`...
+15:15:20.655 npm warn deprecated @humanwhocodes/object-schema@2.0.3: Use @eslint/object-schema instead
+15:15:20.723 npm warn deprecated @humanwhocodes/config-array@0.13.0: Use @eslint/config-array instead
+15:15:20.982 npm warn deprecated sourcemap-codec@1.4.8: Please use @jridgewell/sourcemap-codec instead
+15:15:20.985 npm warn deprecated rollup-plugin-terser@7.0.2: This package has been deprecated and is no longer maintained. Please use @rollup/plugin-terser
+15:15:21.372 npm warn deprecated workbox-google-analytics@6.6.0: It is not compatible with newer versions of GA starting with v4, as long as you are using GAv3 it should be ok, but the package is not longer being maintained
+15:15:21.718 npm warn deprecated workbox-cacheable-response@6.6.0: workbox-background-sync@6.6.0
+15:15:22.101 npm warn deprecated stable@0.1.8: Modern JS already guarantees Array#sort() is a stable sort, so this library is deprecated. See the compatibility table on MDN: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort#browser_compatibility
+15:15:22.124 npm warn deprecated q@1.5.1: You or someone you depend on is using Q, the JavaScript Promise library that gave JavaScript developers strong feelings about promises. They can almost certainly migrate to the native JavaScript promise now. Thank you literally everyone for joining me in this bet against the odds. Be excellent to each other.
+15:15:22.124 npm warn deprecated
+15:15:22.124 npm warn deprecated (For a CapTP with native promises, see @endo/eventual-send and @endo/captp)
+15:15:22.938 npm warn deprecated whatwg-encoding@1.0.5: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+15:15:23.039 npm warn deprecated abab@2.0.6: Use your platform's native atob() and btoa() methods instead
+15:15:23.102 npm warn deprecated w3c-hr-time@1.0.2: Use your platform's native performance.now() and performance.timeOrigin.
+15:15:23.136 npm warn deprecated domexception@2.0.1: Use your platform's native DOMException instead
+15:15:23.319 npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+15:15:23.349 npm warn deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+15:15:23.369 npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
+15:15:23.815 npm warn deprecated @babel/plugin-proposal-optional-chaining@7.21.0: This proposal has been merged to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-optional-chaining instead.
+15:15:23.825 npm warn deprecated @babel/plugin-proposal-numeric-separator@7.18.6: This proposal has been merged to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-numeric-separator instead.
+15:15:23.826 npm warn deprecated @babel/plugin-proposal-private-methods@7.18.6: This proposal has been merged to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-private-methods instead.
+15:15:23.827 npm warn deprecated @babel/plugin-proposal-nullish-coalescing-operator@7.18.6: This proposal has been merged to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-nullish-coalescing-operator instead.
+15:15:23.830 npm warn deprecated @babel/plugin-proposal-class-properties@7.18.6: This proposal has been merged to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-class-properties instead.
+15:15:26.950 npm warn deprecated @babel/plugin-proposal-private-property-in-object@7.21.11: This proposal has been merged to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-private-property-in-object instead.
+15:15:28.032 npm warn deprecated svgo@1.3.2: This SVGO version is no longer supported. Upgrade to v2.x.x.
+15:15:28.087 npm warn deprecated source-map@0.8.0-beta.0: The work that was done in this beta branch won't be included in future versions
+15:15:31.765 npm warn deprecated eslint@8.57.1: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+15:15:37.148 
+15:15:37.149 added 1525 packages, and audited 1527 packages in 2m
+15:15:37.149 
+15:15:37.151 288 packages are looking for funding
+15:15:37.152   run `npm fund` for details
+15:15:37.175 
+15:15:37.176 26 vulnerabilities (9 low, 3 moderate, 14 high)
+15:15:37.176 
+15:15:37.177 To address issues that do not require attention, run:
+15:15:37.177   npm audit fix
+15:15:37.177 
+15:15:37.177 To address all issues (including breaking changes), run:
+15:15:37.177   npm audit fix --force
+15:15:37.178 
+15:15:37.178 Run `npm audit` for details.
+15:15:37.179 npm notice
+15:15:37.179 npm notice New minor version of npm available! 11.11.0 -> 11.12.1
+15:15:37.179 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.12.1
+15:15:37.179 npm notice To update run: npm install -g npm@11.12.1
+15:15:37.179 npm notice
+15:15:39.328 
+15:15:39.328 > frontend@0.1.0 build
+15:15:39.328 > craco build
+15:15:39.328 
+15:15:40.284 craco:  *** Cannot find ESLint loader (eslint-loader). ***
+15:15:40.337 (node:193) [DEP0176] DeprecationWarning: fs.F_OK is deprecated, use fs.constants.F_OK instead
+15:15:40.337 (Use `node --trace-deprecation ...` to show where the warning was created)
+15:15:40.339 Creating an optimized production build...
+15:16:04.510 Failed to compile.
+15:16:04.510 
+15:16:04.510 [eslint] 
+15:16:04.511 src/components/HackerRoom.jsx
+15:16:04.511   Line 1680:5:  Definition for rule 'react-hooks/exhaustive-deps' was not found  react-hooks/exhaustive-deps
+15:16:04.511 
+15:16:04.511 src/hooks/useActiveSection.js
+15:16:04.511   Line 51:5:  Definition for rule 'react-hooks/exhaustive-deps' was not found  react-hooks/exhaustive-deps
+15:16:04.511 
+15:16:04.511 Search for the keywords to learn more about each error.
+15:16:04.511 
+15:16:04.511 
+15:16:04.569 npm error Lifecycle script `build` failed with error:
+15:16:04.570 npm error code 1
+15:16:04.571 npm error path /vercel/path0/frontend
+15:16:04.571 npm error workspace frontend@0.1.0
+15:16:04.572 npm error location /vercel/path0/frontend
+15:16:04.572 npm error command failed
+15:16:04.572 npm error command sh -c craco build
+15:16:04.583 Error: Command "npm run build" exited with 1
