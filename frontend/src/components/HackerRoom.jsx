@@ -1234,12 +1234,12 @@ export default function HackerRoom() {
       addBook(3.2, z + b.w / 2, b);
       z += b.w + 0.005;
     });
-    // Trophy at end of shelf
+    // Trophy at end of shelf (inside shelf bounds z: -1.2 to 0.4)
     const trophyBase = new THREE.Mesh(
       new THREE.BoxGeometry(0.15, 0.05, 0.15),
       new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.6 })
     );
-    trophyBase.position.set(SHELF_X, 3.25, 0.55);
+    trophyBase.position.set(SHELF_X, 3.25, 0.22);
     shelfGroup.add(trophyBase);
     const trophyCup = new THREE.Mesh(
       new THREE.CylinderGeometry(0.05, 0.03, 0.18, 12),
@@ -1249,7 +1249,7 @@ export default function HackerRoom() {
         roughness: 0.25,
       })
     );
-    trophyCup.position.set(SHELF_X, 3.37, 0.55);
+    trophyCup.position.set(SHELF_X, 3.365, 0.22);
     shelfGroup.add(trophyCup);
     const trophyHandleL = new THREE.Mesh(
       new THREE.TorusGeometry(0.04, 0.01, 6, 12, Math.PI),
@@ -1259,11 +1259,11 @@ export default function HackerRoom() {
         roughness: 0.25,
       })
     );
-    trophyHandleL.position.set(SHELF_X - 0.05, 3.39, 0.55);
+    trophyHandleL.position.set(SHELF_X - 0.05, 3.38, 0.22);
     trophyHandleL.rotation.z = Math.PI / 2;
     shelfGroup.add(trophyHandleL);
     const trophyHandleR = trophyHandleL.clone();
-    trophyHandleR.position.set(SHELF_X + 0.05, 3.39, 0.55);
+    trophyHandleR.position.set(SHELF_X + 0.05, 3.38, 0.22);
     trophyHandleR.rotation.z = -Math.PI / 2;
     shelfGroup.add(trophyHandleR);
 
@@ -1288,16 +1288,16 @@ export default function HackerRoom() {
       flat.castShadow = true;
       shelfGroup.add(flat);
     });
-    // Rubik's cube (small)
+    // Rubik's cube sitting on middle shelf (within shelf z bounds)
     const cubeColors = [0xef4444, 0x22c55e, 0x3b82f6, 0xeab308, 0xf97316, 0xffffff];
     const cubeMats = cubeColors.map(
       (c) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.6 })
     );
     const rubik = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.22, 0.22), cubeMats);
-    rubik.position.set(SHELF_X, 2.63, 0.55);
+    // Shelf y=2.5 top=2.525, cube half-height=0.11 → center at 2.635
+    rubik.position.set(SHELF_X, 2.635, 0.22);
     rubik.rotation.y = 0.25;
     rubik.castShadow = true;
-    // Cube grid lines (overlay via thin dark cubes) — simplified by using black edges
     shelfGroup.add(rubik);
 
     // --- Bottom shelf: tall books + small plant ---
@@ -1313,14 +1313,15 @@ export default function HackerRoom() {
       addBook(1.8, z + b.w / 2, b);
       z += b.w + 0.005;
     });
-    // Small succulent on end
+    // Small succulent on end of bottom shelf (inside shelf bounds)
+    // Shelf y=1.8 top=1.825; pot height 0.18 → center at 1.915 so bottom sits on shelf
     const miniPot = new THREE.Mesh(
       new THREE.CylinderGeometry(0.1, 0.08, 0.18, 12),
       new THREE.MeshStandardMaterial({ color: 0x78716c, roughness: 0.8 })
     );
-    miniPot.position.set(SHELF_X, 1.92, 0.55);
+    miniPot.position.set(SHELF_X, 1.915, 0.22);
     shelfGroup.add(miniPot);
-    // Succulent leaves (small cones around center)
+    // Succulent leaves (sitting on pot top ~y=2.005)
     const succMat = new THREE.MeshStandardMaterial({
       color: 0x4d7c0f,
       roughness: 0.7,
@@ -1328,13 +1329,13 @@ export default function HackerRoom() {
     for (let i = 0; i < 6; i++) {
       const angle = (i / 6) * Math.PI * 2;
       const leaf = new THREE.Mesh(
-        new THREE.ConeGeometry(0.04, 0.12, 6),
+        new THREE.ConeGeometry(0.035, 0.11, 6),
         succMat
       );
       leaf.position.set(
         SHELF_X + Math.cos(angle) * 0.05,
-        2.06,
-        0.55 + Math.sin(angle) * 0.05
+        2.05,
+        0.22 + Math.sin(angle) * 0.05
       );
       leaf.rotation.z = Math.cos(angle) * 0.35;
       leaf.rotation.x = Math.sin(angle) * 0.35;
@@ -1342,10 +1343,10 @@ export default function HackerRoom() {
     }
     // Center leaf pointing up
     const centerLeaf = new THREE.Mesh(
-      new THREE.ConeGeometry(0.04, 0.14, 6),
+      new THREE.ConeGeometry(0.035, 0.14, 6),
       succMat
     );
-    centerLeaf.position.set(SHELF_X, 2.08, 0.55);
+    centerLeaf.position.set(SHELF_X, 2.07, 0.22);
     shelfGroup.add(centerLeaf);
 
     scene.add(shelfGroup);
@@ -1366,30 +1367,6 @@ export default function HackerRoom() {
       note.rotation.z = n.tilt;
       scene.add(note);
     });
-
-    // ---------- Smartphone on desk ----------
-    const phoneGroup = new THREE.Group();
-    const phoneBody = new THREE.Mesh(
-      new THREE.BoxGeometry(0.32, 0.03, 0.6),
-      new THREE.MeshStandardMaterial({
-        color: 0x0b1220,
-        roughness: 0.3,
-        metalness: 0.4,
-      })
-    );
-    phoneBody.position.set(1.2, 1.29, -0.15);
-    phoneBody.rotation.y = 0.3;
-    phoneGroup.add(phoneBody);
-    // Phone screen (subtle glow)
-    const phoneScreen = new THREE.Mesh(
-      new THREE.PlaneGeometry(0.26, 0.54),
-      new THREE.MeshBasicMaterial({ color: 0x22d3ee, transparent: true, opacity: 0.35 })
-    );
-    phoneScreen.rotation.x = -Math.PI / 2;
-    phoneScreen.rotation.z = 0.3;
-    phoneScreen.position.set(1.2, 1.306, -0.15);
-    phoneGroup.add(phoneScreen);
-    scene.add(phoneGroup);
 
     // ---------- Ceiling pendant lamp ----------
     const ceilGroup = new THREE.Group();
