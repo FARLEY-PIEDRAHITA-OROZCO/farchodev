@@ -1,26 +1,29 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Menu, X, Terminal, Sun, Moon } from "lucide-react";
 import { Button } from "./ui/button";
 import { useTheme } from "../context/ThemeContext";
+import useActiveSection from "../hooks/useActiveSection";
 
 const links = [
-  { label: "Inicio", href: "#home" },
-  { label: "Sobre mí", href: "#about" },
-  { label: "Skills", href: "#skills" },
-  { label: "Proyectos", href: "#projects" },
-  { label: "Experiencia", href: "#experience" },
-  { label: "Certificaciones", href: "#certs" },
-  { label: "Contacto", href: "#contact" }
+  { label: "Inicio", href: "#home", id: "home" },
+  { label: "Sobre mí", href: "#about", id: "about" },
+  { label: "Skills", href: "#skills", id: "skills" },
+  { label: "Proyectos", href: "#projects", id: "projects" },
+  { label: "Experiencia", href: "#experience", id: "experience" },
+  { label: "Certificaciones", href: "#certs", id: "certs" },
+  { label: "Contacto", href: "#contact", id: "contact" }
 ];
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const { theme, toggle } = useTheme();
+  const sectionIds = useMemo(() => links.map((l) => l.id), []);
+  const active = useActiveSection(sectionIds);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 30);
-    window.addEventListener("scroll", onScroll);
+    window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
@@ -43,16 +46,30 @@ export default function Navbar() {
         </a>
 
         <div className="hidden lg:flex items-center gap-1">
-          {links.map((l) => (
-            <a
-              key={l.href}
-              href={l.href}
-              className="px-3 py-2 text-sm text-slate-300 hover:text-white transition-colors relative group"
-            >
-              {l.label}
-              <span className="absolute bottom-1 left-3 right-3 h-px bg-cyan-400 scale-x-0 group-hover:scale-x-100 origin-left transition-transform" />
-            </a>
-          ))}
+          {links.map((l) => {
+            const isActive = active === l.id;
+            return (
+              <a
+                key={l.href}
+                href={l.href}
+                aria-current={isActive ? "page" : undefined}
+                className={`px-3 py-2 text-sm transition-colors relative group ${
+                  isActive
+                    ? "text-white"
+                    : "text-slate-300 hover:text-white"
+                }`}
+              >
+                {l.label}
+                <span
+                  className={`absolute bottom-1 left-3 right-3 h-px origin-left transition-transform duration-300 ${
+                    isActive
+                      ? "bg-cyan-400 scale-x-100"
+                      : "bg-cyan-400 scale-x-0 group-hover:scale-x-100"
+                  }`}
+                />
+              </a>
+            );
+          })}
         </div>
 
         <div className="hidden lg:flex items-center gap-3">
@@ -87,17 +104,28 @@ export default function Navbar() {
 
       {open && (
         <div className="lg:hidden bg-[#05070E]/95 backdrop-blur-xl border-t border-white/5">
-          <div className="px-6 py-4 flex flex-col gap-2">
-            {links.map((l) => (
-              <a
-                key={l.href}
-                href={l.href}
-                onClick={() => setOpen(false)}
-                className="py-2 text-slate-300 hover:text-white"
-              >
-                {l.label}
-              </a>
-            ))}
+          <div className="px-6 py-4 flex flex-col gap-1">
+            {links.map((l) => {
+              const isActive = active === l.id;
+              return (
+                <a
+                  key={l.href}
+                  href={l.href}
+                  onClick={() => setOpen(false)}
+                  aria-current={isActive ? "page" : undefined}
+                  className={`py-2.5 px-3 rounded-lg text-sm transition-colors flex items-center gap-2 ${
+                    isActive
+                      ? "bg-cyan-400/10 text-white border border-cyan-400/30"
+                      : "text-slate-300 hover:text-white hover:bg-white/[0.03]"
+                  }`}
+                >
+                  {isActive && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                  )}
+                  <span>{l.label}</span>
+                </a>
+              );
+            })}
           </div>
         </div>
       )}
