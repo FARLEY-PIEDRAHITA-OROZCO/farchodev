@@ -1,0 +1,13 @@
+# .vercelignore
+# Avoid shipping unnecessary files to Vercel builds
+node_modules
+.git
+.emergent
+.env
+/app/memory
+/app/logs
+/app/test_result.md
+*.pyc
+__pycache__
+.pytest_cache
+.DS_Store

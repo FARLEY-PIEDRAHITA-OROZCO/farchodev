@@ -1,0 +1,8 @@
+# Python deps for Vercel serverless function (mirrors backend/requirements.txt
+# but trimmed to what the API actually needs at runtime)
+fastapi==0.110.1
+pydantic>=2.6.4
+email-validator>=2.2.0
+python-dotenv>=1.0.1
+motor==3.3.1
+pymongo==4.5.0
