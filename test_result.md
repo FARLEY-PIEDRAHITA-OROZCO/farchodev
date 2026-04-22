@@ -107,6 +107,21 @@ user_problem_statement: |
   Backend scope: persistir mensajes de contacto y contador de visitas.
 
 backend:
+  - task: "POST /api/contact — rate limiting + honeypot"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Added in-memory rate limiter (5 requests per hour per client IP, via X-Forwarded-For or X-Real-IP header). Also added a `website` honeypot field: when filled, the request is silently accepted (returns 201) without saving/sending email. When rate limit is exceeded, returns 429 with a user-friendly message."
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED: Anti-spam features working perfectly. HONEYPOT: Request with website='http://spam.com' returns 201 with email_sent=false and message field emptied. RATE LIMITING: First 5 requests from same IP (X-Forwarded-For: 10.99.99.100) succeed with 201, 6th request returns 429 with Spanish error message 'Has enviado demasiados mensajes. Intenta de nuevo en una hora.' Backend logs confirm honeypot triggered and rate limit exceeded. REGRESSION: All other endpoints (GET /api/contact, /api/stats/ping, /api/health) still working correctly."
+
   - task: "POST /api/contact — send email via Gmail SMTP"
     implemented: true
     working: true
@@ -252,3 +267,28 @@ agent_communication:
         - GET /api/contact shows email_sent field for all messages ✅
         
         Gmail SMTP integration is fully functional. No issues found.
+    - agent: "testing"
+      message: |
+        ✅ ANTI-SPAM FEATURES TESTING COMPLETE - ALL WORKING PERFECTLY
+        Comprehensive testing of honeypot and rate limiting features on POST /api/contact.
+        
+        🍯 HONEYPOT FEATURE:
+        - Tested with website='http://spam.com' field populated ✅
+        - Returns 201 Created but email_sent=false (no email sent) ✅
+        - Message field correctly emptied to prevent data persistence ✅
+        - Backend logs confirm "honeypot triggered; discarding spam submission" ✅
+        
+        ⏱️ RATE LIMITING FEATURE:
+        - Tested 6 rapid requests from same IP (X-Forwarded-For: 10.99.99.100) ✅
+        - First 5 requests: 201 Created with email_sent=true ✅
+        - 6th request: 429 Too Many Requests ✅
+        - Spanish error message: "Has enviado demasiados mensajes. Intenta de nuevo en una hora." ✅
+        - Backend logs confirm "rate limit exceeded for 10.99.99.100" ✅
+        
+        🔄 REGRESSION TESTING:
+        - GET /api/contact: Working correctly (returns {total, items[]}) ✅
+        - GET /api/stats/ping: Working correctly (increments visits counter) ✅
+        - GET /api/health: Working correctly (returns {status: 'ok', db: 'connected'}) ✅
+        - Normal contact submissions: Working correctly (all required fields, email_sent boolean) ✅
+        
+        All anti-spam features implemented and functioning as designed. No issues found.

@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import Reveal from "./Reveal";
 import { projects } from "../data/mock";
 import { Github, ExternalLink, Filter } from "lucide-react";
 
@@ -93,16 +94,18 @@ export default function Projects() {
     <section id="projects" className="relative py-28 px-6 lg:px-10">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-12">
-          <div>
-            <div className="inline-flex items-center gap-2 font-mono text-xs text-cyan-400 uppercase tracking-widest mb-3">
-              <span className="w-8 h-px bg-cyan-400" />
-              03 — Proyectos
+          <Reveal>
+            <div>
+              <div className="inline-flex items-center gap-2 font-mono text-xs text-cyan-400 uppercase tracking-widest mb-3">
+                <span className="w-8 h-px bg-cyan-400" />
+                03 — Proyectos
+              </div>
+              <h2 className="text-4xl lg:text-5xl font-semibold text-white leading-tight">
+                Laboratorio <br />
+                <span className="text-slate-400">de código y seguridad</span>
+              </h2>
             </div>
-            <h2 className="text-4xl lg:text-5xl font-semibold text-white leading-tight">
-              Laboratorio <br />
-              <span className="text-slate-400">de código y seguridad</span>
-            </h2>
-          </div>
+          </Reveal>
 
           <div className="flex items-center gap-2 flex-wrap">
             <Filter className="w-4 h-4 text-slate-400" />
@@ -123,8 +126,10 @@ export default function Projects() {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filtered.map((p) => (
-            <TiltCard key={p.id} project={p} />
+          {filtered.map((p, i) => (
+            <Reveal key={p.id} delay={i * 80}>
+              <TiltCard project={p} />
+            </Reveal>
           ))}
         </div>
       </div>

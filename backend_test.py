@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Backend API Testing for Farley Portfolio
-Tests all 4 endpoints: POST /api/contact, GET /api/contact, GET /api/stats/ping, GET /api/health
+Tests all endpoints including anti-spam features: honeypot and rate limiting
 """
 
 import requests
@@ -9,9 +9,195 @@ import json
 import time
 from datetime import datetime
 from typing import Dict, Any
+from pathlib import Path
 
-# Base URL from frontend/.env
-BASE_URL = "https://qa-3d-portfolio.preview.emergentagent.com/api"
+# Load environment variables to get the backend URL
+def load_env():
+    env_path = Path("/app/frontend/.env")
+    env_vars = {}
+    if env_path.exists():
+        with open(env_path) as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#') and '=' in line:
+                    key, value = line.split('=', 1)
+                    env_vars[key] = value
+    return env_vars
+
+env_vars = load_env()
+BASE_URL = env_vars.get('REACT_APP_BACKEND_URL', 'https://qa-3d-portfolio.preview.emergentagent.com') + "/api"
+
+print(f"🔗 Testing against: {BASE_URL}")
+
+def test_honeypot_feature():
+    """Test honeypot anti-spam feature"""
+    print("\n=== Testing Honeypot Feature ===")
+    
+    # Test with honeypot field populated
+    honeypot_payload = {
+        "name": "Test User",
+        "email": "test@example.com",
+        "subject": "Test Subject",
+        "message": "This is a test message from a bot.",
+        "website": "http://spam.com"  # Honeypot field populated
+    }
+    
+    try:
+        response = requests.post(
+            f"{BASE_URL}/contact",
+            json=honeypot_payload,
+            headers={
+                "Content-Type": "application/json",
+                "X-Forwarded-For": "10.99.99.99"
+            },
+            timeout=30
+        )
+        
+        print(f"Status Code: {response.status_code}")
+        print(f"Response: {response.json()}")
+        
+        if response.status_code == 201:
+            data = response.json()
+            # Should return 201 but with email_sent: false
+            if data.get("email_sent") == False:
+                print("✅ Honeypot: Returns 201 with email_sent=false")
+                
+                # Check that message field is empty (as per implementation)
+                if data.get("message") == "":
+                    print("✅ Honeypot: Message field emptied correctly")
+                    return True
+                else:
+                    print(f"❌ Honeypot: Message field not emptied, got: '{data.get('message')}'")
+                    return False
+            else:
+                print(f"❌ Honeypot: email_sent should be false, got: {data.get('email_sent')}")
+                return False
+        else:
+            print(f"❌ Honeypot: Expected 201, got {response.status_code}")
+            return False
+            
+    except Exception as e:
+        print(f"❌ Honeypot test failed with error: {e}")
+        return False
+
+def test_rate_limiting():
+    """Test rate limiting feature"""
+    print("\n=== Testing Rate Limiting ===")
+    
+    # Use same X-Forwarded-For header for all requests to trigger rate limiting
+    headers = {
+        "Content-Type": "application/json",
+        "X-Forwarded-For": "10.99.99.100"
+    }
+    
+    successful_requests = 0
+    rate_limited = False
+    spanish_error = False
+    
+    print("Sending 6 requests in quick succession...")
+    
+    # Send 6 requests in quick succession
+    for i in range(6):
+        payload = {
+            "name": f"Rate Test User {i+1}",
+            "email": f"ratetest{i+1}@example.com",
+            "subject": f"Rate Test {i+1}",
+            "message": f"This is rate test message number {i+1}."
+        }
+        
+        try:
+            response = requests.post(
+                f"{BASE_URL}/contact",
+                json=payload,
+                headers=headers,
+                timeout=30
+            )
+            
+            if response.status_code == 201:
+                successful_requests += 1
+                print(f"  Request {i+1}: ✅ 201 Created")
+            elif response.status_code == 429:
+                rate_limited = True
+                detail = response.json().get("detail", "")
+                print(f"  Request {i+1}: 🚫 429 Rate Limited - {detail}")
+                
+                # Check if the error message is in Spanish as expected
+                if "demasiados mensajes" in detail.lower() or "intenta de nuevo" in detail.lower():
+                    spanish_error = True
+                    print("✅ Rate Limit: Spanish error message confirmed")
+                else:
+                    print(f"❌ Rate Limit: Error message not in Spanish: '{detail}'")
+                break
+            else:
+                print(f"  Request {i+1}: ❓ {response.status_code} - {response.json()}")
+            
+            # Small delay between requests
+            time.sleep(0.1)
+            
+        except Exception as e:
+            print(f"  Request {i+1}: ❌ Error - {e}")
+    
+    # Validate rate limiting behavior
+    if successful_requests == 5 and rate_limited and spanish_error:
+        print("✅ Rate limiting working correctly: 5 requests succeeded, 6th failed with 429 in Spanish")
+        return True
+    else:
+        print(f"❌ Rate limiting failed: {successful_requests} successful, rate_limited={rate_limited}, spanish_error={spanish_error}")
+        return False
+
+def test_normal_contact_submission():
+    """Test that normal contact submissions still work"""
+    print("\n=== Testing Normal Contact Submission ===")
+    
+    normal_payload = {
+        "name": "Normal User",
+        "email": "normal@example.com",
+        "subject": "Normal Subject",
+        "message": "This is a normal message without any spam indicators."
+        # No website field
+    }
+    
+    try:
+        response = requests.post(
+            f"{BASE_URL}/contact",
+            json=normal_payload,
+            headers={
+                "Content-Type": "application/json",
+                "X-Forwarded-For": "10.99.99.200"
+            },
+            timeout=30
+        )
+        
+        print(f"Status Code: {response.status_code}")
+        print(f"Response: {response.json()}")
+        
+        if response.status_code == 201:
+            data = response.json()
+            # Should have all required fields
+            required_fields = ["id", "name", "email", "subject", "message", "created_at", "email_sent"]
+            missing_fields = [field for field in required_fields if field not in data]
+            
+            if not missing_fields:
+                print("✅ Normal Contact: All required fields present")
+                
+                # Email sending status (may be true or false depending on SMTP config)
+                email_sent = data.get("email_sent")
+                if isinstance(email_sent, bool):
+                    print("✅ Normal Contact: email_sent is boolean")
+                    return True
+                else:
+                    print(f"❌ Normal Contact: email_sent should be boolean, got {type(email_sent)}: {email_sent}")
+                    return False
+            else:
+                print(f"❌ Normal Contact: Missing fields: {missing_fields}")
+                return False
+        else:
+            print(f"❌ Normal Contact: Expected 201, got {response.status_code}")
+            return False
+            
+    except Exception as e:
+        print(f"❌ Normal contact test failed with error: {e}")
+        return False
 
 def test_health_endpoint():
     """Test GET /api/health endpoint"""
@@ -302,25 +488,32 @@ def test_contact_get_list():
         return False
 
 def run_all_tests():
-    """Run all backend tests"""
-    print("🚀 Starting Farley Portfolio Backend API Tests")
+    """Run all backend tests including anti-spam features"""
+    print("🚀 Starting Farley Portfolio Backend API Tests (Including Anti-Spam)")
     print(f"Base URL: {BASE_URL}")
     
     results = {}
     
-    # Test health endpoint
+    # Test health endpoint first
     results["health"] = test_health_endpoint()
     
     # Test stats ping endpoint
     results["stats_ping"] = test_stats_ping_endpoint()
     
-    # Test contact POST with valid payload
+    # Test normal contact submission (baseline)
+    results["normal_contact"] = test_normal_contact_submission()
+    
+    # Test anti-spam features
+    results["honeypot"] = test_honeypot_feature()
+    results["rate_limiting"] = test_rate_limiting()
+    
+    # Test contact POST with valid payload (additional validation)
     results["contact_post_valid"], created_id = test_contact_post_valid()
     
     # Test contact POST validation
     results["contact_post_validation"] = test_contact_post_validation()
     
-    # Test contact GET list
+    # Test contact GET list (regression test)
     results["contact_get_list"] = test_contact_get_list()
     
     # Summary
@@ -331,11 +524,25 @@ def run_all_tests():
     passed = 0
     total = len(results)
     
-    for test_name, result in results.items():
-        status = "✅ PASS" if result else "❌ FAIL"
-        print(f"{test_name:25} {status}")
-        if result:
-            passed += 1
+    # Group results by category
+    anti_spam_tests = ["normal_contact", "honeypot", "rate_limiting"]
+    core_tests = ["health", "stats_ping", "contact_post_valid", "contact_post_validation", "contact_get_list"]
+    
+    print("\n🛡️  ANTI-SPAM FEATURES:")
+    for test_name in anti_spam_tests:
+        if test_name in results:
+            status = "✅ PASS" if results[test_name] else "❌ FAIL"
+            print(f"  {test_name:20} {status}")
+            if results[test_name]:
+                passed += 1
+    
+    print("\n🔧 CORE FUNCTIONALITY:")
+    for test_name in core_tests:
+        if test_name in results:
+            status = "✅ PASS" if results[test_name] else "❌ FAIL"
+            print(f"  {test_name:20} {status}")
+            if results[test_name]:
+                passed += 1
     
     print(f"\nOverall: {passed}/{total} tests passed")
     

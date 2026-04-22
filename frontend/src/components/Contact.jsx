@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import Reveal from "./Reveal";
 import { profile } from "../data/mock";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -11,7 +12,7 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function Contact() {
   const { toast } = useToast();
-  const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
+  const [form, setForm] = useState({ name: "", email: "", subject: "", message: "", website: "" });
   const [loading, setLoading] = useState(false);
 
   const handle = (k) => (e) => setForm({ ...form, [k]: e.target.value });
@@ -32,7 +33,7 @@ export default function Contact() {
         title: "Mensaje enviado ✓",
         description: "Gracias por tu mensaje. Te responderé pronto."
       });
-      setForm({ name: "", email: "", subject: "", message: "" });
+      setForm({ name: "", email: "", subject: "", message: "", website: "" });
     } catch (err) {
       try {
         const stored = JSON.parse(localStorage.getItem("farley_messages") || "[]");
@@ -41,8 +42,9 @@ export default function Contact() {
       } catch (_) {
         /* ignore */
       }
+      const status = err?.response?.status;
       toast({
-        title: "Error al enviar",
+        title: status === 429 ? "Demasiados mensajes" : "Error al enviar",
         description:
           err?.response?.data?.detail ||
           "No pudimos enviar ahora. Tu mensaje se guardó localmente."
@@ -57,14 +59,18 @@ export default function Contact() {
       <div className="max-w-7xl mx-auto">
         <div className="grid lg:grid-cols-5 gap-10">
           <div className="lg:col-span-2 space-y-6">
-            <div className="inline-flex items-center gap-2 font-mono text-xs text-cyan-400 uppercase tracking-widest">
-              <span className="w-8 h-px bg-cyan-400" />
-              06 — Contacto
-            </div>
-            <h2 className="text-4xl lg:text-5xl font-semibold text-white leading-tight">
-              Hablemos de <br />
-              <span className="text-slate-400">tu próximo proyecto</span>
-            </h2>
+            <Reveal>
+              <div className="inline-flex items-center gap-2 font-mono text-xs text-cyan-400 uppercase tracking-widest">
+                <span className="w-8 h-px bg-cyan-400" />
+                06 — Contacto
+              </div>
+            </Reveal>
+            <Reveal delay={80}>
+              <h2 className="text-4xl lg:text-5xl font-semibold text-white leading-tight">
+                Hablemos de <br />
+                <span className="text-slate-400">tu próximo proyecto</span>
+              </h2>
+            </Reveal>
             <p className="text-slate-400 leading-relaxed">
               ¿Tienes un proyecto de testing, automatización o quieres colaborar
               en investigación de seguridad? Estoy abierto a conversaciones.
@@ -128,6 +134,20 @@ export default function Contact() {
             <div className="flex items-center gap-2 font-mono text-xs text-cyan-300">
               <Terminal className="w-3.5 h-3.5" />
               <span>~/contact $ compose_message.sh</span>
+            </div>
+
+            {/* Honeypot — bots fill this, real users don't see it */}
+            <div className="sr-only" aria-hidden="true">
+              <label>
+                Website (leave empty)
+                <input
+                  type="text"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  value={form.website}
+                  onChange={handle("website")}
+                />
+              </label>
             </div>
 
             <div className="grid md:grid-cols-2 gap-4">

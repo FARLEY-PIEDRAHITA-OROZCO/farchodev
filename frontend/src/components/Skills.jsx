@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Reveal from "./Reveal";
 import { skills } from "../data/mock";
 import { Bug, Shield, Code2 } from "lucide-react";
 
@@ -16,16 +17,18 @@ export default function Skills() {
     <section id="skills" className="relative py-28 px-6 lg:px-10 bg-[#070A14]">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-12">
-          <div>
-            <div className="inline-flex items-center gap-2 font-mono text-xs text-cyan-400 uppercase tracking-widest mb-3">
-              <span className="w-8 h-px bg-cyan-400" />
-              02 — Habilidades
+          <Reveal>
+            <div>
+              <div className="inline-flex items-center gap-2 font-mono text-xs text-cyan-400 uppercase tracking-widest mb-3">
+                <span className="w-8 h-px bg-cyan-400" />
+                02 — Habilidades
+              </div>
+              <h2 className="text-4xl lg:text-5xl font-semibold text-white leading-tight">
+                Stack técnico <br />
+                <span className="text-slate-400">& herramientas</span>
+              </h2>
             </div>
-            <h2 className="text-4xl lg:text-5xl font-semibold text-white leading-tight">
-              Stack técnico <br />
-              <span className="text-slate-400">& herramientas</span>
-            </h2>
-          </div>
+          </Reveal>
 
           <div className="flex flex-wrap gap-2">
             {tabs.map((t) => {

@@ -1,4 +1,5 @@
 import React from "react";
+import Reveal from "./Reveal";
 import { profile } from "../data/mock";
 import { MapPin, Mail, Github, Linkedin, Shield, Bug, Code2 } from "lucide-react";
 
@@ -8,14 +9,18 @@ export default function About() {
       <div className="max-w-7xl mx-auto">
         <div className="grid lg:grid-cols-5 gap-12">
           <div className="lg:col-span-2 space-y-6">
-            <div className="inline-flex items-center gap-2 font-mono text-xs text-cyan-400 uppercase tracking-widest">
-              <span className="w-8 h-px bg-cyan-400" />
-              01 — Sobre mí
-            </div>
-            <h2 className="text-4xl lg:text-5xl font-semibold text-white leading-tight">
-              Ingeniero curioso. <br />
-              <span className="text-slate-400">Mentalidad de atacante.</span>
-            </h2>
+            <Reveal>
+              <div className="inline-flex items-center gap-2 font-mono text-xs text-cyan-400 uppercase tracking-widest">
+                <span className="w-8 h-px bg-cyan-400" />
+                01 — Sobre mí
+              </div>
+            </Reveal>
+            <Reveal delay={80}>
+              <h2 className="text-4xl lg:text-5xl font-semibold text-white leading-tight">
+                Ingeniero curioso. <br />
+                <span className="text-slate-400">Mentalidad de atacante.</span>
+              </h2>
+            </Reveal>
 
             {/* Avatar block */}
             <div className="relative mt-8 p-6 rounded-3xl bg-gradient-to-br from-white/[0.04] to-white/[0.01] border border-white/10 backdrop-blur-sm">

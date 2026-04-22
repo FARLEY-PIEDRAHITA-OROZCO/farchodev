@@ -1,5 +1,6 @@
 import React from "react";
 import HackerRoom from "./HackerRoom";
+import MobileHeroVisual from "./MobileHeroVisual";
 import { Button } from "./ui/button";
 import { ArrowDown, Download, Shield, Bug, Lightbulb } from "lucide-react";
 import { profile } from "../data/mock";
@@ -30,9 +31,9 @@ export default function Hero() {
       <div className="absolute top-1/4 -left-40 w-[500px] h-[500px] rounded-full bg-blue-600/20 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-0 right-0 w-[520px] h-[520px] rounded-full bg-cyan-500/10 blur-[140px] pointer-events-none" />
 
-      {/* 3D scene — bleeds into hero without borders/rectangle */}
+      {/* 3D scene — desktop only (lg+); mobile uses a 2D visual */}
       <div
-        className="absolute inset-y-0 right-0 w-full lg:w-[62%] pointer-events-none"
+        className="hidden lg:block absolute inset-y-0 right-0 w-[62%] pointer-events-none"
         style={{
           maskImage:
             "radial-gradient(ellipse 85% 85% at 65% 55%, black 55%, transparent 95%)",
@@ -111,8 +112,8 @@ export default function Hero() {
             </div>
           </div>
 
-          {/* Lamp hint */}
-          <div className="inline-flex items-center gap-2 pt-4 text-xs font-mono text-cyan-300/80">
+          {/* Lamp hint (desktop only) */}
+          <div className="hidden lg:inline-flex items-center gap-2 pt-4 text-xs font-mono text-cyan-300/80">
             <Lightbulb className={`w-3.5 h-3.5 ${isDay ? "" : "text-amber-300"}`} />
             <span>
               {isDay
@@ -122,7 +123,12 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* Right column empty — scene occupies the background; pointer-events-none so canvas receives clicks */}
+        {/* Mobile hero visual (hidden on lg+) */}
+        <div className="lg:hidden pointer-events-auto">
+          <MobileHeroVisual />
+        </div>
+
+        {/* Right column empty — scene occupies the background on desktop */}
         <div className="hidden lg:block pointer-events-none" />
       </div>
 

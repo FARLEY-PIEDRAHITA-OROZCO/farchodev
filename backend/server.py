@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Query
+from fastapi import FastAPI, APIRouter, HTTPException, Query, Request
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -8,7 +8,8 @@ from pathlib import Path
 from pydantic import BaseModel, Field, EmailStr, field_validator
 from typing import List, Optional
 import uuid
-from datetime import datetime, timezone
+from collections import defaultdict, deque
+from datetime import datetime, timedelta, timezone
 
 from mail import send_contact_email
 
@@ -38,6 +39,9 @@ class ContactCreate(BaseModel):
     email: EmailStr
     subject: Optional[str] = Field(default="", max_length=200)
     message: str = Field(..., min_length=1, max_length=5000)
+    # Honeypot field — legitimate users never fill this (hidden input).
+    # If populated, the request is treated as spam and silently accepted.
+    website: Optional[str] = Field(default="", max_length=200)
 
     @field_validator("name", "message")
     @classmethod
@@ -69,6 +73,35 @@ class VisitsResponse(BaseModel):
     visits: int
 
 
+# ---------- Simple in-memory rate limiter for contact form ----------
+_RATE_LIMIT_MAX = 5  # max requests
+_RATE_LIMIT_WINDOW = 3600  # per hour (seconds)
+_rate_bucket: "dict[str, deque]" = defaultdict(deque)
+
+
+def _client_ip(request: Request) -> str:
+    fwd = request.headers.get("x-forwarded-for")
+    if fwd:
+        return fwd.split(",")[0].strip()
+    real = request.headers.get("x-real-ip")
+    if real:
+        return real.strip()
+    return request.client.host if request.client else "unknown"
+
+
+def _check_rate_limit(ip: str) -> bool:
+    now = datetime.now(timezone.utc)
+    cutoff = now - timedelta(seconds=_RATE_LIMIT_WINDOW)
+    bucket = _rate_bucket[ip]
+    # Drop entries older than window
+    while bucket and bucket[0] < cutoff:
+        bucket.popleft()
+    if len(bucket) >= _RATE_LIMIT_MAX:
+        return False
+    bucket.append(now)
+    return True
+
+
 # ---------- Routes ----------
 @api_router.get("/")
 async def root():
@@ -86,7 +119,27 @@ async def health():
 
 
 @api_router.post("/contact", response_model=ContactMessage, status_code=201)
-async def create_contact(payload: ContactCreate):
+async def create_contact(payload: ContactCreate, request: Request):
+    # Honeypot: if filled, silently pretend success without saving/sending.
+    if payload.website:
+        logging.info("honeypot triggered; discarding spam submission")
+        return ContactMessage(
+            name=payload.name or "anon",
+            email=payload.email,
+            subject=payload.subject or "",
+            message="",
+            email_sent=False,
+        )
+
+    # Rate limit per client IP
+    ip = _client_ip(request)
+    if not _check_rate_limit(ip):
+        logging.warning("rate limit exceeded for %s", ip)
+        raise HTTPException(
+            status_code=429,
+            detail="Has enviado demasiados mensajes. Intenta de nuevo en una hora.",
+        )
+
     try:
         msg = ContactMessage(
             name=payload.name,
@@ -94,7 +147,6 @@ async def create_contact(payload: ContactCreate):
             subject=payload.subject or "",
             message=payload.message,
         )
-        # Try to send email; don't fail the request if SMTP has issues.
         try:
             msg.email_sent = await send_contact_email(
                 name=msg.name,
@@ -107,6 +159,8 @@ async def create_contact(payload: ContactCreate):
             msg.email_sent = False
         await db.contact_messages.insert_one(msg.model_dump())
         return msg
+    except HTTPException:
+        raise
     except Exception:
         logging.exception("failed to save contact message")
         raise HTTPException(status_code=500, detail="Failed to save message")

@@ -1,4 +1,5 @@
 import React from "react";
+import Reveal from "./Reveal";
 import { experience } from "../data/mock";
 import { Briefcase, MapPin, CheckCircle2 } from "lucide-react";
 
@@ -7,14 +8,16 @@ export default function Experience() {
     <section id="experience" className="relative py-28 px-6 lg:px-10 bg-[#070A14]">
       <div className="max-w-7xl mx-auto">
         <div className="mb-14">
-          <div className="inline-flex items-center gap-2 font-mono text-xs text-cyan-400 uppercase tracking-widest mb-3">
-            <span className="w-8 h-px bg-cyan-400" />
-            04 — Experiencia
-          </div>
-          <h2 className="text-4xl lg:text-5xl font-semibold text-white leading-tight">
-            Trayectoria <br />
-            <span className="text-slate-400">profesional</span>
-          </h2>
+          <Reveal>
+            <div className="inline-flex items-center gap-2 font-mono text-xs text-cyan-400 uppercase tracking-widest mb-3">
+              <span className="w-8 h-px bg-cyan-400" />
+              04 — Experiencia
+            </div>
+            <h2 className="text-4xl lg:text-5xl font-semibold text-white leading-tight">
+              Trayectoria <br />
+              <span className="text-slate-400">profesional</span>
+            </h2>
+          </Reveal>
         </div>
 
         <div className="relative">
