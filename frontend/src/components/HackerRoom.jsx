@@ -2,16 +2,219 @@ import React, { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { useTheme } from "../context/ThemeContext";
 
-// Isometric Hacker Room built in pure Three.js (no JSX primitives to avoid
-// the visual-edits babel plugin conflict with R3F).
-// Clicking the desk lamp toggles day/night across the entire page.
+// -------------------- Canvas Texture helpers --------------------
+function makeCurtainTexture() {
+  const c = document.createElement("canvas");
+  c.width = 128;
+  c.height = 512;
+  const ctx = c.getContext("2d");
+  // Fabric base: slate-dark with soft vertical gradient
+  const grad = ctx.createLinearGradient(0, 0, 0, 512);
+  grad.addColorStop(0, "#2a3042");
+  grad.addColorStop(0.5, "#1b2032");
+  grad.addColorStop(1, "#141828");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 128, 512);
+  // Vertical folds
+  for (let x = 0; x < 128; x += 8) {
+    const alpha = 0.05 + Math.random() * 0.08;
+    ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+    ctx.fillRect(x, 0, 1, 512);
+    ctx.fillStyle = `rgba(0,0,0,${alpha * 1.5})`;
+    ctx.fillRect(x + 4, 0, 1, 512);
+  }
+  // Horizontal slat seams (hints of blinds)
+  ctx.strokeStyle = "rgba(0,0,0,0.35)";
+  ctx.lineWidth = 1;
+  for (let y = 0; y < 512; y += 16) {
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(128, y);
+    ctx.stroke();
+  }
+  const tex = new THREE.CanvasTexture(c);
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.wrapT = THREE.ClampToEdgeWrapping;
+  tex.repeat.set(1, 1);
+  return tex;
+}
+
+function makeScreenTexture() {
+  const c = document.createElement("canvas");
+  c.width = 512;
+  c.height = 288;
+  const ctx = c.getContext("2d");
+  // Terminal background
+  ctx.fillStyle = "#0a1525";
+  ctx.fillRect(0, 0, 512, 288);
+  // Header bar
+  ctx.fillStyle = "#0f1d33";
+  ctx.fillRect(0, 0, 512, 20);
+  ctx.fillStyle = "#ef4444";
+  ctx.beginPath(); ctx.arc(10, 10, 4, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = "#f59e0b";
+  ctx.beginPath(); ctx.arc(22, 10, 4, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = "#22c55e";
+  ctx.beginPath(); ctx.arc(34, 10, 4, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = "#64748b";
+  ctx.font = "10px 'JetBrains Mono', monospace";
+  ctx.fillText("~ — farley@dev: zsh", 50, 14);
+  // Code content
+  const lines = [
+    { prompt: "$", text: "npm run test:e2e --headed", color: "#22d3ee" },
+    { prompt: ">", text: "Running 420 tests...", color: "#94a3b8" },
+    { prompt: "✓", text: "auth.spec.ts (42)", color: "#22c55e" },
+    { prompt: "✓", text: "dashboard.spec.ts (58)", color: "#22c55e" },
+    { prompt: "✓", text: "payments.spec.ts (36)", color: "#22c55e" },
+    { prompt: "✓", text: "api-contracts.spec.ts (61)", color: "#22c55e" },
+    { prompt: "!", text: "edge-cases: SQLi vector...", color: "#f59e0b" },
+    { prompt: "$", text: "nmap -sV 10.0.0.1", color: "#22d3ee" },
+    { prompt: ">", text: "Starting Nmap scan...", color: "#94a3b8" },
+    { prompt: "$", text: "_", color: "#22d3ee" },
+  ];
+  ctx.font = "13px 'JetBrains Mono', Menlo, monospace";
+  lines.forEach((ln, i) => {
+    const y = 42 + i * 22;
+    ctx.fillStyle = "#22d3ee";
+    ctx.fillText(ln.prompt, 14, y);
+    ctx.fillStyle = ln.color;
+    ctx.fillText(ln.text, 34, y);
+  });
+  const tex = new THREE.CanvasTexture(c);
+  tex.minFilter = THREE.LinearFilter;
+  return tex;
+}
+
+function makeLaptopScreenTexture() {
+  const c = document.createElement("canvas");
+  c.width = 256;
+  c.height = 160;
+  const ctx = c.getContext("2d");
+  ctx.fillStyle = "#0b1628";
+  ctx.fillRect(0, 0, 256, 160);
+  // "Editor" panes
+  ctx.fillStyle = "#0f1d33";
+  ctx.fillRect(0, 0, 60, 160);
+  ctx.fillStyle = "#1e3a8a";
+  ctx.fillRect(0, 0, 256, 14);
+  ctx.fillStyle = "#fff";
+  ctx.font = "8px 'JetBrains Mono', monospace";
+  ctx.fillText("farley-portfolio — VS Code", 4, 10);
+  // Code lines
+  const codeLines = [
+    { t: "import React from 'react'", c: "#f472b6" },
+    { t: "", c: "" },
+    { t: "function Hero() {", c: "#c084fc" },
+    { t: "  const [theme] = useTheme()", c: "#93c5fd" },
+    { t: "  return (", c: "#93c5fd" },
+    { t: "    <Canvas>", c: "#fbbf24" },
+    { t: "      <HackerRoom />", c: "#22d3ee" },
+    { t: "    </Canvas>", c: "#fbbf24" },
+    { t: "  )", c: "#93c5fd" },
+    { t: "}", c: "#c084fc" },
+  ];
+  ctx.font = "9px 'JetBrains Mono', monospace";
+  codeLines.forEach((ln, i) => {
+    ctx.fillStyle = "#64748b";
+    ctx.fillText(String(i + 1).padStart(2, "0"), 66, 30 + i * 13);
+    ctx.fillStyle = ln.c || "#cbd5e1";
+    ctx.fillText(ln.t, 84, 30 + i * 13);
+  });
+  const tex = new THREE.CanvasTexture(c);
+  tex.minFilter = THREE.LinearFilter;
+  return tex;
+}
+
+function makePictureTexture() {
+  const c = document.createElement("canvas");
+  c.width = 256;
+  c.height = 320;
+  const ctx = c.getContext("2d");
+  // Abstract "glitch" art
+  const g = ctx.createLinearGradient(0, 0, 256, 320);
+  g.addColorStop(0, "#0891b2");
+  g.addColorStop(0.5, "#1e3a8a");
+  g.addColorStop(1, "#0f172a");
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 256, 320);
+  // Geometric shapes
+  ctx.fillStyle = "rgba(34,211,238,0.7)";
+  ctx.beginPath();
+  ctx.arc(128, 140, 60, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "rgba(59,130,246,0.4)";
+  ctx.fillRect(40, 80, 180, 8);
+  ctx.fillRect(40, 200, 140, 8);
+  ctx.fillRect(40, 220, 100, 8);
+  // Glitch lines
+  for (let i = 0; i < 20; i++) {
+    ctx.fillStyle = `rgba(${Math.random() > 0.5 ? "34,211,238" : "239,68,68"},${
+      0.1 + Math.random() * 0.4
+    })`;
+    ctx.fillRect(0, Math.random() * 320, 256, 1 + Math.random() * 2);
+  }
+  // Text
+  ctx.fillStyle = "#f8fafc";
+  ctx.font = "bold 16px monospace";
+  ctx.fillText("think.", 80, 280);
+  ctx.fillStyle = "#22d3ee";
+  ctx.font = "bold 16px monospace";
+  ctx.fillText("break.", 128, 280);
+  return new THREE.CanvasTexture(c);
+}
+
+function makeSkylineTexture() {
+  const c = document.createElement("canvas");
+  c.width = 512;
+  c.height = 180;
+  const ctx = c.getContext("2d");
+  ctx.clearRect(0, 0, 512, 180);
+  // Draw buildings silhouettes - dark charcoal
+  ctx.fillStyle = "#1a2234";
+  let x = 0;
+  const buildings = [];
+  while (x < 512) {
+    const w = 18 + Math.random() * 55;
+    const h = 50 + Math.random() * 110;
+    buildings.push({ x, w, h });
+    ctx.fillRect(x, 180 - h, w, h);
+    x += w + 2;
+  }
+  // Antenna on tallest building
+  const tallest = buildings.reduce((a, b) => (b.h > a.h ? b : a), buildings[0]);
+  ctx.fillStyle = "#1a2234";
+  ctx.fillRect(tallest.x + tallest.w / 2 - 1, 180 - tallest.h - 18, 2, 18);
+  ctx.beginPath();
+  ctx.arc(tallest.x + tallest.w / 2, 180 - tallest.h - 22, 3, 0, Math.PI * 2);
+  ctx.fillStyle = "#ef4444";
+  ctx.fill();
+  // Lit windows
+  buildings.forEach((b) => {
+    for (let wx = b.x + 4; wx < b.x + b.w - 4; wx += 6) {
+      for (let wy = 180 - b.h + 8; wy < 180 - 6; wy += 9) {
+        if (Math.random() > 0.55) {
+          ctx.fillStyle =
+            Math.random() > 0.15
+              ? "rgba(246, 198, 106, 0.9)"
+              : "rgba(34, 211, 238, 0.9)";
+          ctx.fillRect(wx, wy, 2, 3);
+        }
+      }
+    }
+  });
+  const tex = new THREE.CanvasTexture(c);
+  tex.minFilter = THREE.LinearFilter;
+  return tex;
+}
+
+// -------------------- Component --------------------
 export default function HackerRoom() {
   const mountRef = useRef(null);
   const { theme, toggle } = useTheme();
   const themeRef = useRef(theme);
-  const targetsRef = useRef(null);
+  const prevThemeRef = useRef(theme);
+  const revealStartRef = useRef(0);
 
-  // Keep themeRef current so animation loop reads latest value
   useEffect(() => {
     themeRef.current = theme;
   }, [theme]);
@@ -27,7 +230,6 @@ export default function HackerRoom() {
     const scene = new THREE.Scene();
     scene.background = null;
 
-    // Isometric-ish orthographic camera
     const aspect = width / height;
     const viewSize = 5.2;
     const camera = new THREE.OrthographicCamera(
@@ -54,10 +256,9 @@ export default function HackerRoom() {
     renderer.domElement.style.display = "block";
 
     // ---------- Lights ----------
-    const ambient = new THREE.AmbientLight(0xffffff, 0.3);
+    const ambient = new THREE.AmbientLight(0xffffff, 0.35);
     scene.add(ambient);
 
-    // Directional "window" light — color/intensity lerps between day/night
     const windowLight = new THREE.DirectionalLight(0xffffff, 0.8);
     windowLight.position.set(-6, 8, -4);
     windowLight.castShadow = true;
@@ -68,17 +269,20 @@ export default function HackerRoom() {
     windowLight.shadow.camera.bottom = -6;
     scene.add(windowLight);
 
-    // Warm lamp point light (the interactive element)
-    const lampLight = new THREE.PointLight(0xffb347, 0, 7, 2);
+    const lampLight = new THREE.PointLight(0xffb347, 0, 8, 2);
     lampLight.position.set(1.9, 2.3, -0.6);
     lampLight.castShadow = true;
     lampLight.shadow.mapSize.set(512, 512);
     scene.add(lampLight);
 
-    // Monitor cyan glow
-    const monitorLight = new THREE.PointLight(0x22d3ee, 0.6, 4, 2);
+    const monitorLight = new THREE.PointLight(0x22d3ee, 0.9, 4.5, 2);
     monitorLight.position.set(-1.3, 2.1, -0.2);
     scene.add(monitorLight);
+
+    // Soft fill from screen onto desk (always on in night)
+    const deskGlow = new THREE.PointLight(0x22d3ee, 0.2, 2.5, 2);
+    deskGlow.position.set(0, 1.4, -0.5);
+    scene.add(deskGlow);
 
     // ---------- Materials ----------
     const floorMat = new THREE.MeshStandardMaterial({
@@ -91,24 +295,18 @@ export default function HackerRoom() {
     });
     const deskMat = new THREE.MeshStandardMaterial({
       color: 0x2f3a52,
-      roughness: 0.7,
+      roughness: 0.65,
+      metalness: 0.05,
     });
     const metalMat = new THREE.MeshStandardMaterial({
       color: 0x3d4863,
-      metalness: 0.7,
-      roughness: 0.35,
+      metalness: 0.75,
+      roughness: 0.3,
     });
-    const screenMat = new THREE.MeshBasicMaterial({ color: 0x0a1525 });
-    const screenGlowMat = new THREE.MeshBasicMaterial({
-      color: 0x22d3ee,
-      transparent: true,
-      opacity: 0.9,
-    });
-    const lampShadeMat = new THREE.MeshStandardMaterial({
-      color: 0xd97757,
-      emissive: 0xff8855,
-      emissiveIntensity: 0,
-      roughness: 0.5,
+    const screenFrameMat = new THREE.MeshStandardMaterial({
+      color: 0x0a0e18,
+      roughness: 0.4,
+      metalness: 0.3,
     });
     const chairMat = new THREE.MeshStandardMaterial({
       color: 0x1a1f30,
@@ -131,46 +329,156 @@ export default function HackerRoom() {
       color: 0x0ea5e9,
       roughness: 0.4,
     });
+    const rugMat = new THREE.MeshStandardMaterial({
+      color: 0x7c2d12,
+      roughness: 0.95,
+    });
+    const rugAccentMat = new THREE.MeshStandardMaterial({
+      color: 0xd97757,
+      roughness: 0.95,
+    });
+    const keyboardMat = new THREE.MeshStandardMaterial({
+      color: 0x0f1422,
+      roughness: 0.6,
+      metalness: 0.2,
+    });
+    const mouseMat = keyboardMat.clone();
 
     // ---------- Room geometry ----------
-    // Floor
     const floorGeo = new THREE.BoxGeometry(8, 0.2, 6);
     const floor = new THREE.Mesh(floorGeo, floorMat);
     floor.position.set(0, -0.1, 0);
     floor.receiveShadow = true;
     scene.add(floor);
 
-    // Back wall
-    const backWallGeo = new THREE.BoxGeometry(8, 5, 0.2);
-    const backWall = new THREE.Mesh(backWallGeo, wallMat);
-    backWall.position.set(0, 2.5, -3);
-    backWall.receiveShadow = true;
-    scene.add(backWall);
+    // Baseboard
+    const baseMat = new THREE.MeshStandardMaterial({
+      color: 0x151a27,
+      roughness: 0.85,
+    });
+    const baseB = new THREE.Mesh(new THREE.BoxGeometry(8, 0.18, 0.04), baseMat);
+    baseB.position.set(0, 0.09, -2.92);
+    scene.add(baseB);
+    const baseL = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.18, 6), baseMat);
+    baseL.position.set(-3.92, 0.09, 0);
+    scene.add(baseL);
+
+    // Back wall — split into 4 pieces around window cutout
+    // Window dimensions used by both back-wall pieces and frame below
+    const winW = 3.2;
+    const winH = 2.2;
+    const winX = -0.5;
+    const winY = 3;
+    const winZ = -2.88;
+    const bwMat = wallMat;
+    const BW_W = 8, BW_H = 5;
+    const winLeft = winX - winW / 2;
+    const winRight = winX + winW / 2;
+    const winTop = winY + winH / 2;
+    const winBottom = winY - winH / 2;
+    // Left piece
+    const bwLeft = new THREE.Mesh(
+      new THREE.BoxGeometry(BW_W / 2 + winLeft, BW_H, 0.2),
+      bwMat
+    );
+    bwLeft.position.set(-BW_W / 2 + (BW_W / 2 + winLeft) / 2, BW_H / 2, -3);
+    bwLeft.receiveShadow = true;
+    scene.add(bwLeft);
+    // Right piece
+    const bwRight = new THREE.Mesh(
+      new THREE.BoxGeometry(BW_W / 2 - winRight, BW_H, 0.2),
+      bwMat
+    );
+    bwRight.position.set(winRight + (BW_W / 2 - winRight) / 2, BW_H / 2, -3);
+    bwRight.receiveShadow = true;
+    scene.add(bwRight);
+    // Top piece (above window)
+    const bwTop = new THREE.Mesh(
+      new THREE.BoxGeometry(winW, BW_H - winTop, 0.2),
+      bwMat
+    );
+    bwTop.position.set(winX, winTop + (BW_H - winTop) / 2, -3);
+    bwTop.receiveShadow = true;
+    scene.add(bwTop);
+    // Bottom piece (below window)
+    const bwBottom = new THREE.Mesh(
+      new THREE.BoxGeometry(winW, winBottom, 0.2),
+      bwMat
+    );
+    bwBottom.position.set(winX, winBottom / 2, -3);
+    bwBottom.receiveShadow = true;
+    scene.add(bwBottom);
 
     // Left wall
-    const leftWallGeo = new THREE.BoxGeometry(0.2, 5, 6);
-    const leftWall = new THREE.Mesh(leftWallGeo, wallMat);
+    const leftWall = new THREE.Mesh(
+      new THREE.BoxGeometry(0.2, 5, 6),
+      wallMat
+    );
     leftWall.position.set(-4, 2.5, 0);
     leftWall.receiveShadow = true;
     scene.add(leftWall);
 
-    // Window frame on back wall
-    const windowFrameGeo = new THREE.BoxGeometry(3.2, 2.2, 0.15);
-    const windowFrame = new THREE.Mesh(windowFrameGeo, metalMat);
-    windowFrame.position.set(-0.5, 3, -2.88);
-    scene.add(windowFrame);
+    // ---------- Window frame ----------
+    // Hollow window frame: 4 thin bars so sky/skyline show through
+    const frameMat = new THREE.MeshStandardMaterial({
+      color: 0x3d4863,
+      metalness: 0.6,
+      roughness: 0.45,
+    });
+    const frameT = 0.12;
+    const frameD = 0.18;
+    // top
+    const frameTop = new THREE.Mesh(
+      new THREE.BoxGeometry(winW, frameT, frameD),
+      frameMat
+    );
+    frameTop.position.set(winX, winY + winH / 2 - frameT / 2, winZ);
+    scene.add(frameTop);
+    // bottom (sill)
+    const frameBottom = new THREE.Mesh(
+      new THREE.BoxGeometry(winW, frameT, frameD + 0.06),
+      frameMat
+    );
+    frameBottom.position.set(winX, winY - winH / 2 + frameT / 2, winZ + 0.03);
+    scene.add(frameBottom);
+    // left
+    const frameLeft = new THREE.Mesh(
+      new THREE.BoxGeometry(frameT, winH, frameD),
+      frameMat
+    );
+    frameLeft.position.set(winX - winW / 2 + frameT / 2, winY, winZ);
+    scene.add(frameLeft);
+    // right
+    const frameRight = new THREE.Mesh(
+      new THREE.BoxGeometry(frameT, winH, frameD),
+      frameMat
+    );
+    frameRight.position.set(winX + winW / 2 - frameT / 2, winY, winZ);
+    scene.add(frameRight);
 
-    // Sky panel behind window (color changes with theme)
+    // Sky (gradient plane) — color changes with theme
     const skyGeo = new THREE.PlaneGeometry(3, 2);
     const skyMat = new THREE.MeshBasicMaterial({ color: 0x0a1025 });
     const sky = new THREE.Mesh(skyGeo, skyMat);
     sky.position.set(-0.5, 3, -2.95);
     scene.add(sky);
 
-    // Window cross bars
+    // Skyline silhouette (always in scene; only visible when curtain up)
+    const skylineTex = makeSkylineTexture();
+    const skylineMat = new THREE.MeshBasicMaterial({
+      map: skylineTex,
+      transparent: true,
+      opacity: 0,
+    });
+    const skyline = new THREE.Mesh(new THREE.PlaneGeometry(3, 0.9), skylineMat);
+    skyline.position.set(-0.5, 2.32, -2.92);
+    scene.add(skyline);
+
+    // Window cross bars (brighter metal)
     const barMat = new THREE.MeshStandardMaterial({
-      color: 0x2a3245,
-      roughness: 0.6,
+      color: 0x3a4258,
+      roughness: 0.5,
+      metalness: 0.4,
     });
     const barH = new THREE.Mesh(
       new THREE.BoxGeometry(3.2, 0.08, 0.05),
@@ -185,20 +493,41 @@ export default function HackerRoom() {
     barV.position.set(-0.5, 3, -2.86);
     scene.add(barV);
 
-    // Tiny moon / sun on sky
-    const celestialGeo = new THREE.CircleGeometry(0.28, 32);
+    // Celestial (sun/moon)
     const celestialMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-    const celestial = new THREE.Mesh(celestialGeo, celestialMat);
+    const celestial = new THREE.Mesh(
+      new THREE.CircleGeometry(0.28, 32),
+      celestialMat
+    );
     celestial.position.set(0.6, 3.6, -2.93);
     scene.add(celestial);
 
-    // Stars (visible at night)
-    const STAR_COUNT = 60;
+    // Moon crater overlay (a slightly darker circle that shows only at night)
+    const craterMat = new THREE.MeshBasicMaterial({
+      color: 0x9aa3c0,
+      transparent: true,
+      opacity: 0.6,
+    });
+    const crater1 = new THREE.Mesh(
+      new THREE.CircleGeometry(0.06, 12),
+      craterMat
+    );
+    crater1.position.set(0.5, 3.65, -2.925);
+    scene.add(crater1);
+    const crater2 = new THREE.Mesh(
+      new THREE.CircleGeometry(0.04, 12),
+      craterMat
+    );
+    crater2.position.set(0.7, 3.55, -2.925);
+    scene.add(crater2);
+
+    // Stars
+    const STAR_COUNT = 70;
     const starPositions = new Float32Array(STAR_COUNT * 3);
     for (let i = 0; i < STAR_COUNT; i++) {
       starPositions[i * 3] = (Math.random() - 0.5) * 3 - 0.5;
       starPositions[i * 3 + 1] = 2 + Math.random() * 2;
-      starPositions[i * 3 + 2] = -2.9;
+      starPositions[i * 3 + 2] = -2.92;
     }
     const starGeo = new THREE.BufferGeometry();
     starGeo.setAttribute(
@@ -215,15 +544,106 @@ export default function HackerRoom() {
     const stars = new THREE.Points(starGeo, starMat);
     scene.add(stars);
 
+    // ---------- Curtain (roll-up blind) ----------
+    const curtainTex = makeCurtainTexture();
+    const curtainMat = new THREE.MeshStandardMaterial({
+      map: curtainTex,
+      roughness: 0.85,
+      side: THREE.DoubleSide,
+    });
+    const CURTAIN_H = 2.35;
+    const CURTAIN_W = 3.35;
+    const curtainGeo = new THREE.PlaneGeometry(CURTAIN_W, CURTAIN_H, 1, 1);
+    // Shift geometry so top edge is at y=0 (scale will roll from bottom up)
+    curtainGeo.translate(0, -CURTAIN_H / 2, 0);
+    const curtain = new THREE.Mesh(curtainGeo, curtainMat);
+    // Top of curtain aligned just above window
+    curtain.position.set(-0.5, 4.15, -2.78);
+    curtain.castShadow = false;
+    curtain.receiveShadow = false;
+    scene.add(curtain);
+
+    // Curtain rod
+    const rod = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.05, 0.05, 3.6, 16),
+      metalMat
+    );
+    rod.rotation.z = Math.PI / 2;
+    rod.position.set(-0.5, 4.18, -2.78);
+    scene.add(rod);
+    // Rod caps
+    [-1.8, 1.8].forEach((x) => {
+      const cap = new THREE.Mesh(
+        new THREE.SphereGeometry(0.08, 16, 16),
+        metalMat
+      );
+      cap.position.set(-0.5 + x, 4.18, -2.78);
+      scene.add(cap);
+    });
+    // Pull-string tassel
+    const tasselGroup = new THREE.Group();
+    const string = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.008, 0.008, 0.3, 8),
+      new THREE.MeshStandardMaterial({ color: 0x94a3b8 })
+    );
+    string.position.set(1.15, -0.15, 0);
+    tasselGroup.add(string);
+    const tasselBall = new THREE.Mesh(
+      new THREE.SphereGeometry(0.05, 12, 12),
+      new THREE.MeshStandardMaterial({ color: 0xd97757, roughness: 0.8 })
+    );
+    tasselBall.position.set(1.15, -0.35, 0);
+    tasselGroup.add(tasselBall);
+    curtain.add(tasselGroup); // attach so tassel stays at bottom of curtain
+
+    // ---------- Floor rug ----------
+    const rugGroup = new THREE.Group();
+    const rug = new THREE.Mesh(
+      new THREE.CircleGeometry(1.6, 48),
+      rugMat
+    );
+    rug.rotation.x = -Math.PI / 2;
+    rug.position.set(0.3, 0.02, 0.5);
+    rug.receiveShadow = true;
+    rugGroup.add(rug);
+    const rugRing = new THREE.Mesh(
+      new THREE.RingGeometry(1.2, 1.3, 48),
+      rugAccentMat
+    );
+    rugRing.rotation.x = -Math.PI / 2;
+    rugRing.position.set(0.3, 0.021, 0.5);
+    rugGroup.add(rugRing);
+    const rugRing2 = new THREE.Mesh(
+      new THREE.RingGeometry(0.6, 0.68, 48),
+      rugAccentMat
+    );
+    rugRing2.rotation.x = -Math.PI / 2;
+    rugRing2.position.set(0.3, 0.022, 0.5);
+    rugGroup.add(rugRing2);
+    scene.add(rugGroup);
+
     // ---------- Desk ----------
     const deskGroup = new THREE.Group();
-    // Top
-    const deskTopGeo = new THREE.BoxGeometry(5, 0.12, 1.6);
-    const deskTop = new THREE.Mesh(deskTopGeo, deskMat);
+    const deskTop = new THREE.Mesh(
+      new THREE.BoxGeometry(5, 0.12, 1.6),
+      deskMat
+    );
     deskTop.position.set(0, 1.2, -1);
     deskTop.castShadow = true;
     deskTop.receiveShadow = true;
     deskGroup.add(deskTop);
+
+    // Desk LED strip — thin bar under front edge
+    const ledStripGeo = new THREE.BoxGeometry(4.6, 0.03, 0.03);
+    const ledStripMat = new THREE.MeshBasicMaterial({
+      color: 0x22d3ee,
+      transparent: true,
+      opacity: 0.85,
+    });
+    const ledStrip = new THREE.Mesh(ledStripGeo, ledStripMat);
+    ledStrip.position.set(0, 1.135, -0.21);
+    deskGroup.add(ledStrip);
+
     // Legs
     const legGeo = new THREE.BoxGeometry(0.1, 1.2, 0.1);
     [
@@ -241,7 +661,6 @@ export default function HackerRoom() {
 
     // ---------- Monitor ----------
     const monitorGroup = new THREE.Group();
-    // Stand base
     const monStand = new THREE.Mesh(
       new THREE.CylinderGeometry(0.25, 0.3, 0.08, 24),
       metalMat
@@ -254,49 +673,47 @@ export default function HackerRoom() {
     );
     monNeck.position.set(-1.3, 1.58, -1);
     monitorGroup.add(monNeck);
-    // Back of monitor
+    // Body
     const monBack = new THREE.Mesh(
-      new THREE.BoxGeometry(2.2, 1.3, 0.12),
-      metalMat
+      new THREE.BoxGeometry(2.3, 1.4, 0.14),
+      screenFrameMat
     );
     monBack.position.set(-1.3, 2.3, -1.08);
     monBack.castShadow = true;
     monitorGroup.add(monBack);
-    // Screen
+    // Bezel (thin darker surround)
+    const bezel = new THREE.Mesh(
+      new THREE.PlaneGeometry(2.2, 1.3),
+      screenFrameMat
+    );
+    bezel.position.set(-1.3, 2.3, -1.005);
+    monitorGroup.add(bezel);
+    // Screen texture
+    const screenTex = makeScreenTexture();
+    const screenMat = new THREE.MeshBasicMaterial({
+      map: screenTex,
+      transparent: false,
+    });
     const screen = new THREE.Mesh(
       new THREE.PlaneGeometry(2.05, 1.15),
-      screenGlowMat
+      screenMat
     );
     screen.position.set(-1.3, 2.3, -1);
     monitorGroup.add(screen);
+    // Monitor LEDs (power indicators)
+    const ledGreen = new THREE.Mesh(
+      new THREE.SphereGeometry(0.028, 8, 8),
+      new THREE.MeshBasicMaterial({ color: 0x22c55e })
+    );
+    ledGreen.position.set(-0.3, 1.67, -1);
+    monitorGroup.add(ledGreen);
+    const ledRed = new THREE.Mesh(
+      new THREE.SphereGeometry(0.02, 8, 8),
+      new THREE.MeshBasicMaterial({ color: 0xef4444 })
+    );
+    ledRed.position.set(-0.2, 1.67, -1);
+    monitorGroup.add(ledRed);
     scene.add(monitorGroup);
-
-    // Screen "code" lines (small horizontal planes on screen)
-    const codeLines = [];
-    const lineGeoSmall = new THREE.PlaneGeometry(0.9, 0.05);
-    const lineMatA = new THREE.MeshBasicMaterial({
-      color: 0x0ea5e9,
-      transparent: true,
-      opacity: 0.95,
-    });
-    const lineMatB = new THREE.MeshBasicMaterial({
-      color: 0x22d3ee,
-      transparent: true,
-      opacity: 0.85,
-    });
-    for (let i = 0; i < 6; i++) {
-      const w = 0.5 + Math.random() * 1.2;
-      const g = new THREE.PlaneGeometry(w, 0.05);
-      const m = i % 2 === 0 ? lineMatA.clone() : lineMatB.clone();
-      const line = new THREE.Mesh(g, m);
-      line.position.set(
-        -1.3 - (1.0 - w) * 0.5,
-        2.3 + 0.4 - i * 0.16,
-        -0.995
-      );
-      codeLines.push(line);
-      scene.add(line);
-    }
 
     // ---------- Laptop ----------
     const laptopGroup = new THREE.Group();
@@ -307,28 +724,69 @@ export default function HackerRoom() {
     laptopBase.position.set(0.7, 1.29, -0.6);
     laptopBase.castShadow = true;
     laptopGroup.add(laptopBase);
-    // Screen tilted
+    // Keyboard inlay on laptop base
+    const lkInlay = new THREE.Mesh(
+      new THREE.PlaneGeometry(1.05, 0.45),
+      keyboardMat
+    );
+    lkInlay.rotation.x = -Math.PI / 2;
+    lkInlay.position.set(0.7, 1.322, -0.7);
+    laptopGroup.add(lkInlay);
+    // Tilted screen
     const laptopScreen = new THREE.Mesh(
       new THREE.BoxGeometry(1.2, 0.75, 0.04),
-      metalMat
+      screenFrameMat
     );
     laptopScreen.position.set(0.7, 1.65, -0.98);
     laptopScreen.rotation.x = -0.35;
     laptopScreen.castShadow = true;
     laptopGroup.add(laptopScreen);
-    // Glowing display
+    // Display (canvas texture)
+    const laptopTex = makeLaptopScreenTexture();
+    const laptopDispMat = new THREE.MeshBasicMaterial({ map: laptopTex });
     const laptopDisp = new THREE.Mesh(
       new THREE.PlaneGeometry(1.05, 0.62),
-      screenGlowMat
+      laptopDispMat
     );
     laptopDisp.position.set(0.7, 1.65, -0.96);
     laptopDisp.rotation.x = -0.35;
     laptopGroup.add(laptopDisp);
     scene.add(laptopGroup);
 
-    // ---------- Desk lamp (CLICKABLE) ----------
+    // ---------- Keyboard & Mouse on desk ----------
+    const kb = new THREE.Mesh(
+      new THREE.BoxGeometry(1.5, 0.06, 0.45),
+      keyboardMat
+    );
+    kb.position.set(-1.0, 1.295, -0.45);
+    kb.castShadow = true;
+    scene.add(kb);
+    // Key pattern (single plane with grid pattern simulated via texture could be added;
+    // for performance, add a few highlighted key rows)
+    const keyCap = new THREE.MeshStandardMaterial({
+      color: 0x1e293b,
+      roughness: 0.7,
+    });
+    for (let r = 0; r < 3; r++) {
+      for (let cc = 0; cc < 12; cc++) {
+        const k = new THREE.Mesh(
+          new THREE.BoxGeometry(0.09, 0.025, 0.09),
+          keyCap
+        );
+        k.position.set(-1.6 + cc * 0.11, 1.335, -0.55 + r * 0.11);
+        scene.add(k);
+      }
+    }
+    // Mouse
+    const mouse = new THREE.Mesh(
+      new THREE.BoxGeometry(0.18, 0.05, 0.28),
+      mouseMat
+    );
+    mouse.position.set(-0.05, 1.29, -0.35);
+    scene.add(mouse);
+
+    // ---------- Desk Lamp (CLICKABLE) ----------
     const lampGroup = new THREE.Group();
-    lampGroup.name = "lamp";
     const lampBase = new THREE.Mesh(
       new THREE.CylinderGeometry(0.2, 0.25, 0.1, 24),
       metalMat
@@ -337,7 +795,6 @@ export default function HackerRoom() {
     lampBase.castShadow = true;
     lampBase.userData.isLamp = true;
     lampGroup.add(lampBase);
-    // Arm (angled)
     const lampArm = new THREE.Mesh(
       new THREE.CylinderGeometry(0.03, 0.03, 1.1, 16),
       metalMat
@@ -346,7 +803,6 @@ export default function HackerRoom() {
     lampArm.rotation.z = 0.35;
     lampArm.userData.isLamp = true;
     lampGroup.add(lampArm);
-    // Second segment
     const lampArm2 = new THREE.Mesh(
       new THREE.CylinderGeometry(0.03, 0.03, 0.7, 16),
       metalMat
@@ -355,7 +811,13 @@ export default function HackerRoom() {
     lampArm2.rotation.z = -0.8;
     lampArm2.userData.isLamp = true;
     lampGroup.add(lampArm2);
-    // Shade (cone)
+    // Shade
+    const lampShadeMat = new THREE.MeshStandardMaterial({
+      color: 0xc96b44,
+      emissive: 0xff8855,
+      emissiveIntensity: 0,
+      roughness: 0.5,
+    });
     const lampShade = new THREE.Mesh(
       new THREE.ConeGeometry(0.32, 0.45, 24, 1, true),
       lampShadeMat
@@ -365,7 +827,7 @@ export default function HackerRoom() {
     lampShade.castShadow = true;
     lampShade.userData.isLamp = true;
     lampGroup.add(lampShade);
-    // Bulb (small sphere glow)
+    // Bulb
     const bulbMat = new THREE.MeshBasicMaterial({
       color: 0xfff0b0,
       transparent: true,
@@ -382,11 +844,17 @@ export default function HackerRoom() {
 
     // ---------- Chair ----------
     const chairGroup = new THREE.Group();
-    const seat = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.1, 1.2), chairMat);
+    const seat = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.12, 1.2), chairMat);
     seat.position.set(0, 0.9, 1);
     seat.castShadow = true;
     chairGroup.add(seat);
-    const back = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.4, 0.1), chairMat);
+    const seatCushion = new THREE.Mesh(
+      new THREE.BoxGeometry(1.1, 0.06, 1.1),
+      new THREE.MeshStandardMaterial({ color: 0x262e47, roughness: 0.9 })
+    );
+    seatCushion.position.set(0, 0.98, 1);
+    chairGroup.add(seatCushion);
+    const back = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.4, 0.12), chairMat);
     back.position.set(0, 1.55, 1.55);
     back.castShadow = true;
     chairGroup.add(back);
@@ -404,7 +872,7 @@ export default function HackerRoom() {
     chairGroup.add(chairBase);
     scene.add(chairGroup);
 
-    // ---------- Plant in corner ----------
+    // ---------- Plant ----------
     const plantGroup = new THREE.Group();
     const pot = new THREE.Mesh(
       new THREE.CylinderGeometry(0.3, 0.22, 0.5, 16),
@@ -413,24 +881,35 @@ export default function HackerRoom() {
     pot.position.set(-3, 0.25, -2);
     pot.castShadow = true;
     plantGroup.add(pot);
-    // Foliage: a few spheres overlapped
-    for (let i = 0; i < 5; i++) {
-      const r = 0.22 + Math.random() * 0.12;
+    const potRim = new THREE.Mesh(
+      new THREE.TorusGeometry(0.3, 0.03, 10, 24),
+      new THREE.MeshStandardMaterial({ color: 0x2a211c, roughness: 0.9 })
+    );
+    potRim.position.set(-3, 0.5, -2);
+    potRim.rotation.x = Math.PI / 2;
+    plantGroup.add(potRim);
+    // Foliage
+    const leaves = [];
+    for (let i = 0; i < 6; i++) {
+      const r = 0.22 + Math.random() * 0.14;
       const leaf = new THREE.Mesh(
         new THREE.SphereGeometry(r, 12, 12),
         leafMat
       );
-      leaf.position.set(
+      const basePos = [
         -3 + (Math.random() - 0.5) * 0.35,
         0.7 + Math.random() * 0.35,
-        -2 + (Math.random() - 0.5) * 0.35
-      );
+        -2 + (Math.random() - 0.5) * 0.35,
+      ];
+      leaf.position.set(basePos[0], basePos[1], basePos[2]);
+      leaf.userData = { basePos, phase: Math.random() * Math.PI * 2 };
       leaf.castShadow = true;
+      leaves.push(leaf);
       plantGroup.add(leaf);
     }
     scene.add(plantGroup);
 
-    // ---------- Books (stacked) ----------
+    // ---------- Books ----------
     const booksGroup = new THREE.Group();
     bookMats.forEach((m, i) => {
       const book = new THREE.Mesh(
@@ -444,7 +923,7 @@ export default function HackerRoom() {
     });
     scene.add(booksGroup);
 
-    // ---------- Coffee mug ----------
+    // ---------- Coffee mug + steam ----------
     const mugGroup = new THREE.Group();
     const mug = new THREE.Mesh(
       new THREE.CylinderGeometry(0.18, 0.16, 0.32, 20),
@@ -453,7 +932,6 @@ export default function HackerRoom() {
     mug.position.set(-0.1, 1.45, -0.55);
     mug.castShadow = true;
     mugGroup.add(mug);
-    // Handle
     const handle = new THREE.Mesh(
       new THREE.TorusGeometry(0.09, 0.025, 8, 20, Math.PI),
       mugMat
@@ -461,7 +939,6 @@ export default function HackerRoom() {
     handle.position.set(0.08, 1.45, -0.55);
     handle.rotation.y = -Math.PI / 2;
     mugGroup.add(handle);
-    // Coffee surface
     const coffeeMat = new THREE.MeshBasicMaterial({ color: 0x3b2415 });
     const coffee = new THREE.Mesh(
       new THREE.CircleGeometry(0.17, 20),
@@ -471,6 +948,107 @@ export default function HackerRoom() {
     coffee.rotation.x = -Math.PI / 2;
     mugGroup.add(coffee);
     scene.add(mugGroup);
+
+    // Steam particles
+    const steamMat = new THREE.MeshBasicMaterial({
+      color: 0xe2e8f0,
+      transparent: true,
+      opacity: 0.35,
+    });
+    const steamGeo = new THREE.SphereGeometry(0.06, 8, 8);
+    const steamParticles = [];
+    for (let i = 0; i < 8; i++) {
+      const p = new THREE.Mesh(steamGeo, steamMat.clone());
+      p.userData = {
+        t: Math.random(),
+        speed: 0.25 + Math.random() * 0.25,
+        ox: -0.1 + (Math.random() - 0.5) * 0.1,
+      };
+      scene.add(p);
+      steamParticles.push(p);
+    }
+
+    // ---------- Wall clock (on back wall to the right of window) ----------
+    const clockGroup = new THREE.Group();
+    const clockFace = new THREE.Mesh(
+      new THREE.CircleGeometry(0.45, 48),
+      new THREE.MeshStandardMaterial({
+        color: 0xe5e7eb,
+        roughness: 0.3,
+        metalness: 0.1,
+      })
+    );
+    clockFace.position.set(2.5, 3.2, -2.88);
+    clockGroup.add(clockFace);
+    const clockRim = new THREE.Mesh(
+      new THREE.TorusGeometry(0.45, 0.04, 12, 48),
+      new THREE.MeshStandardMaterial({
+        color: 0x1e293b,
+        roughness: 0.3,
+        metalness: 0.6,
+      })
+    );
+    clockRim.position.set(2.5, 3.2, -2.87);
+    clockGroup.add(clockRim);
+    // Hour marks
+    for (let i = 0; i < 12; i++) {
+      const angle = (i / 12) * Math.PI * 2;
+      const mark = new THREE.Mesh(
+        new THREE.BoxGeometry(0.02, 0.07, 0.02),
+        new THREE.MeshBasicMaterial({ color: 0x0f172a })
+      );
+      mark.position.set(
+        2.5 + Math.sin(angle) * 0.37,
+        3.2 + Math.cos(angle) * 0.37,
+        -2.86
+      );
+      mark.rotation.z = -angle;
+      clockGroup.add(mark);
+    }
+    // Hands
+    const handMat = new THREE.MeshBasicMaterial({ color: 0x0f172a });
+    const hourHand = new THREE.Mesh(
+      new THREE.BoxGeometry(0.03, 0.25, 0.01),
+      handMat
+    );
+    hourHand.geometry.translate(0, 0.1, 0);
+    hourHand.position.set(2.5, 3.2, -2.855);
+    clockGroup.add(hourHand);
+    const minuteHand = new THREE.Mesh(
+      new THREE.BoxGeometry(0.02, 0.35, 0.01),
+      handMat
+    );
+    minuteHand.geometry.translate(0, 0.15, 0);
+    minuteHand.position.set(2.5, 3.2, -2.85);
+    clockGroup.add(minuteHand);
+    const centerDot = new THREE.Mesh(
+      new THREE.CircleGeometry(0.04, 16),
+      new THREE.MeshBasicMaterial({ color: 0xef4444 })
+    );
+    centerDot.position.set(2.5, 3.2, -2.84);
+    clockGroup.add(centerDot);
+    scene.add(clockGroup);
+
+    // ---------- Picture frame on left wall ----------
+    const picTex = makePictureTexture();
+    const pictureFrameMat = new THREE.MeshStandardMaterial({
+      color: 0x0f172a,
+      roughness: 0.4,
+      metalness: 0.2,
+    });
+    const picBorder = new THREE.Mesh(
+      new THREE.BoxGeometry(0.1, 1.4, 1.1),
+      pictureFrameMat
+    );
+    picBorder.position.set(-3.89, 2.5, -0.5);
+    scene.add(picBorder);
+    const picCanvas = new THREE.Mesh(
+      new THREE.PlaneGeometry(1, 1.3),
+      new THREE.MeshBasicMaterial({ map: picTex })
+    );
+    picCanvas.rotation.y = Math.PI / 2;
+    picCanvas.position.set(-3.84, 2.5, -0.5);
+    scene.add(picCanvas);
 
     // ---------- Floating code particles ----------
     const PARTICLE_COUNT = 40;
@@ -492,20 +1070,22 @@ export default function HackerRoom() {
       scene.add(p);
     }
 
-    // Pointer-light indicator orbiting lamp (hover hint)
-    const hintGeo = new THREE.RingGeometry(0.45, 0.5, 32);
+    // Lamp hint ring
     const hintMat = new THREE.MeshBasicMaterial({
       color: 0x22d3ee,
       transparent: true,
       opacity: 0,
       side: THREE.DoubleSide,
     });
-    const hintRing = new THREE.Mesh(hintGeo, hintMat);
+    const hintRing = new THREE.Mesh(
+      new THREE.RingGeometry(0.45, 0.5, 32),
+      hintMat
+    );
     hintRing.position.set(1.85, 2.5, -0.6);
     hintRing.rotation.x = -Math.PI / 2;
     scene.add(hintRing);
 
-    // ---------- Raycaster for lamp click ----------
+    // ---------- Raycaster (lamp click) ----------
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2();
     const lampHitList = [lampBase, lampArm, lampArm2, lampShade, bulb];
@@ -531,18 +1111,19 @@ export default function HackerRoom() {
     renderer.domElement.addEventListener("pointermove", onPointerMove);
     renderer.domElement.addEventListener("pointerdown", onPointerDown);
 
-    // ---------- Theme targets ----------
-    // Two palettes; current values lerp toward targets each frame.
+    // ---------- Theme state ----------
     const state = {
-      lamp: themeRef.current === "night" ? 1 : 0, // 1 = on, 0 = off
-      ambient: 0.3,
+      lamp: themeRef.current === "night" ? 1 : 0,
+      ambient: 0.35,
       winI: 0.8,
+      curtainY: themeRef.current === "night" ? 1 : 0.04,
       winC: new THREE.Color(0xffffff),
       skyC: new THREE.Color(0x0a1025),
       wallC: new THREE.Color(0x202635),
       floorC: new THREE.Color(0x1a1f2e),
       starOp: 1,
       celestialC: new THREE.Color(0xffffff),
+      skylineOp: 0,
     };
 
     const getTargets = (t) => {
@@ -551,30 +1132,32 @@ export default function HackerRoom() {
           lamp: 0,
           ambient: 0.85,
           winI: 1.5,
-          winC: new THREE.Color(0xfff4d8), // warm daylight
+          curtainY: 0.04,
+          winC: new THREE.Color(0xfff4d8),
           skyC: new THREE.Color(0x9ed0ff),
           wallC: new THREE.Color(0xe5e1d6),
           floorC: new THREE.Color(0xc8beaa),
           starOp: 0,
-          celestialC: new THREE.Color(0xffe066), // sun
+          celestialC: new THREE.Color(0xffe066),
+          skylineOp: 1,
         };
       }
       return {
         lamp: 1,
-        ambient: 0.22,
-        winI: 0.35,
-        winC: new THREE.Color(0x7c9bd1), // cool moon
+        ambient: 0.3,
+        winI: 0.4,
+        curtainY: 1,
+        winC: new THREE.Color(0x7c9bd1),
         skyC: new THREE.Color(0x0a1025),
         wallC: new THREE.Color(0x202635),
         floorC: new THREE.Color(0x1a1f2e),
         starOp: 1,
-        celestialC: new THREE.Color(0xe8ecff), // moon
+        celestialC: new THREE.Color(0xe8ecff),
+        skylineOp: 0,
       };
     };
 
-    targetsRef.current = getTargets;
-
-    // ---------- Animation ----------
+    // ---------- Animation loop ----------
     const clock = new THREE.Clock();
     let frameId;
     const lerpNum = (a, b, t) => a + (b - a) * t;
@@ -582,46 +1165,101 @@ export default function HackerRoom() {
     const animate = () => {
       const delta = Math.min(clock.getDelta(), 0.05);
       const elapsed = clock.getElapsedTime();
+
+      // Detect theme change -> trigger reveal animations
+      if (prevThemeRef.current !== themeRef.current) {
+        revealStartRef.current = elapsed;
+        prevThemeRef.current = themeRef.current;
+      }
+      const revealT = elapsed - revealStartRef.current;
+      const inReveal = revealT < 2.0;
+
       const targets = getTargets(themeRef.current);
 
-      // Lerp all theme values for smooth transitions
-      const k = 1 - Math.pow(0.001, delta); // smooth
-      state.lamp = lerpNum(state.lamp, targets.lamp, k);
-      state.ambient = lerpNum(state.ambient, targets.ambient, k);
-      state.winI = lerpNum(state.winI, targets.winI, k);
-      state.starOp = lerpNum(state.starOp, targets.starOp, k);
-      state.winC.lerp(targets.winC, k);
-      state.skyC.lerp(targets.skyC, k);
-      state.wallC.lerp(targets.wallC, k);
-      state.floorC.lerp(targets.floorC, k);
-      state.celestialC.lerp(targets.celestialC, k);
+      // Use slower lerp for curtain, faster for lights
+      const kLight = 1 - Math.pow(0.001, delta);
+      const kCurtain = 1 - Math.pow(0.02, delta); // smoother rolling
+
+      state.lamp = lerpNum(state.lamp, targets.lamp, kLight);
+      state.ambient = lerpNum(state.ambient, targets.ambient, kLight);
+      state.winI = lerpNum(state.winI, targets.winI, kLight);
+      state.starOp = lerpNum(state.starOp, targets.starOp, kLight);
+      state.curtainY = lerpNum(state.curtainY, targets.curtainY, kCurtain);
+      state.skylineOp = lerpNum(state.skylineOp, targets.skylineOp, kLight);
+      state.winC.lerp(targets.winC, kLight);
+      state.skyC.lerp(targets.skyC, kLight);
+      state.wallC.lerp(targets.wallC, kLight);
+      state.floorC.lerp(targets.floorC, kLight);
+      state.celestialC.lerp(targets.celestialC, kLight);
 
       // Apply
       ambient.intensity = state.ambient;
       windowLight.intensity = state.winI;
       windowLight.color.copy(state.winC);
-      lampLight.intensity = state.lamp * 2.5;
+      lampLight.intensity = state.lamp * 3.0;
       bulbMat.opacity = state.lamp;
-      lampShadeMat.emissiveIntensity = state.lamp * 0.9;
+      lampShadeMat.emissiveIntensity = state.lamp * 0.95;
       starMat.opacity = state.starOp;
+      craterMat.opacity = state.starOp * 0.6;
       skyMat.color.copy(state.skyC);
       wallMat.color.copy(state.wallC);
       floorMat.color.copy(state.floorC);
       celestialMat.color.copy(state.celestialC);
+      skylineMat.opacity = state.skylineOp;
+      // Curtain roll: scale.y from 1 (down) to ~0.04 (rolled up)
+      curtain.scale.y = Math.max(0.01, state.curtainY);
+      // Hide tassel when rolled up (no bottom to hang from)
+      tasselGroup.visible = state.curtainY > 0.15;
+      // Tassel swing during transition
+      if (inReveal) {
+        tasselGroup.rotation.z = Math.sin(elapsed * 8) * 0.15 * (1 - revealT / 2);
+      } else {
+        tasselGroup.rotation.z *= 0.9;
+      }
 
-      // Celestial moves (sun/moon subtle arc)
-      celestial.position.x = 0.6 + Math.sin(elapsed * 0.1) * 0.3;
+      // Celestial drifts
+      celestial.position.x = 0.6 + Math.sin(elapsed * 0.08) * 0.3;
+      crater1.position.x = 0.5 + Math.sin(elapsed * 0.08) * 0.3;
+      crater2.position.x = 0.7 + Math.sin(elapsed * 0.08) * 0.3;
 
-      // Screen flicker: cycle code lines subtly
-      codeLines.forEach((ln, i) => {
-        ln.material.opacity =
-          0.55 + Math.sin(elapsed * 2 + i * 0.7) * 0.25 + 0.15;
+      // LED strip subtle pulse
+      ledStripMat.opacity = 0.55 + Math.sin(elapsed * 1.4) * 0.25;
+
+      // Monitor LED blink
+      ledGreen.material.color.setHex(0x22c55e);
+      const blink = Math.sin(elapsed * 3) > 0.9 ? 1 : 0.3;
+      ledRed.material.opacity = blink;
+      ledRed.material.transparent = true;
+
+      // Clock hands — normal tick + fast spin during reveal
+      const baseHourSpeed = 0.02;
+      const baseMinuteSpeed = 0.25;
+      const revealBoost = inReveal ? 8 * (1 - revealT / 2) : 0;
+      hourHand.rotation.z -= delta * (baseHourSpeed + revealBoost);
+      minuteHand.rotation.z -= delta * (baseMinuteSpeed + revealBoost * 2);
+
+      // Plant wobble (stronger during reveal)
+      leaves.forEach((leaf) => {
+        const { basePos, phase } = leaf.userData;
+        const wobble = inReveal ? 0.06 * (1 - revealT / 2) : 0.008;
+        leaf.position.x = basePos[0] + Math.sin(elapsed * 2 + phase) * wobble;
+        leaf.position.z = basePos[2] + Math.cos(elapsed * 1.7 + phase) * wobble;
       });
 
-      // Laptop display subtle pulse
-      laptopDisp.material = screenGlowMat;
+      // Coffee steam particles (night only: more visible)
+      const steamVisible = state.lamp; // tied to night-ness
+      steamParticles.forEach((p, i) => {
+        p.userData.t += delta * p.userData.speed;
+        if (p.userData.t > 1) p.userData.t = 0;
+        const t = p.userData.t;
+        p.position.x = p.userData.ox + Math.sin(t * Math.PI * 2 + i) * 0.08;
+        p.position.y = 1.63 + t * 0.9;
+        p.position.z = -0.55;
+        p.material.opacity = steamVisible * (1 - t) * 0.4;
+        p.scale.setScalar(1 + t * 1.8);
+      });
 
-      // Particles drifting
+      // Floating code particles
       particles.forEach((p, i) => {
         const { ox, oy, oz, speed } = p.userData;
         const t = elapsed * speed + i;
@@ -630,7 +1268,7 @@ export default function HackerRoom() {
         p.position.z = oz + Math.cos(t * 0.5) * 0.08;
       });
 
-      // Hint ring pulses gently to draw attention to lamp
+      // Hint ring
       hintMat.opacity = 0.15 + Math.sin(elapsed * 2.5) * 0.1;
       hintRing.rotation.z += delta * 0.5;
 
@@ -663,6 +1301,11 @@ export default function HackerRoom() {
         mount.removeChild(renderer.domElement);
       }
       renderer.dispose();
+      curtainTex.dispose();
+      screenTex.dispose();
+      laptopTex.dispose();
+      picTex.dispose();
+      skylineTex.dispose();
       scene.traverse((obj) => {
         if (obj.geometry) obj.geometry.dispose && obj.geometry.dispose();
         if (obj.material) {
