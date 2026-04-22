@@ -1,10 +1,13 @@
 import React, { useState } from "react";
+import axios from "axios";
 import { profile } from "../data/mock";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 import { useToast } from "../hooks/use-toast";
 import { Mail, Phone, MapPin, Github, Linkedin, Twitter, Send, Terminal } from "lucide-react";
+
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function Contact() {
   const { toast } = useToast();
@@ -13,24 +16,40 @@ export default function Contact() {
 
   const handle = (k) => (e) => setForm({ ...form, [k]: e.target.value });
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
     if (!form.name || !form.email || !form.message) {
-      toast({ title: "Campos incompletos", description: "Por favor completa nombre, email y mensaje." });
+      toast({
+        title: "Campos incompletos",
+        description: "Por favor completa nombre, email y mensaje."
+      });
       return;
     }
     setLoading(true);
-    const stored = JSON.parse(localStorage.getItem("farley_messages") || "[]");
-    stored.push({ ...form, date: new Date().toISOString() });
-    localStorage.setItem("farley_messages", JSON.stringify(stored));
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      await axios.post(`${API}/contact`, form, { timeout: 10000 });
       toast({
         title: "Mensaje enviado ✓",
         description: "Gracias por tu mensaje. Te responderé pronto."
       });
       setForm({ name: "", email: "", subject: "", message: "" });
-    }, 800);
+    } catch (err) {
+      try {
+        const stored = JSON.parse(localStorage.getItem("farley_messages") || "[]");
+        stored.push({ ...form, date: new Date().toISOString(), offline: true });
+        localStorage.setItem("farley_messages", JSON.stringify(stored));
+      } catch (_) {
+        /* ignore */
+      }
+      toast({
+        title: "Error al enviar",
+        description:
+          err?.response?.data?.detail ||
+          "No pudimos enviar ahora. Tu mensaje se guardó localmente."
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

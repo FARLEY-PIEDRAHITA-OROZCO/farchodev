@@ -1,70 +1,142 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, HTTPException, Query
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 from pathlib import Path
-from pydantic import BaseModel, Field, ConfigDict
-from typing import List
+from pydantic import BaseModel, Field, EmailStr, field_validator
+from typing import List, Optional
 import uuid
 from datetime import datetime, timezone
 
 
 ROOT_DIR = Path(__file__).parent
-load_dotenv(ROOT_DIR / '.env')
+load_dotenv(ROOT_DIR / ".env")
 
 # MongoDB connection
-mongo_url = os.environ['MONGO_URL']
+mongo_url = os.environ["MONGO_URL"]
 client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+db = client[os.environ["DB_NAME"]]
 
 # Create the main app without a prefix
-app = FastAPI()
+app = FastAPI(title="Farley Portfolio API")
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
 
-# Define Models
-class StatusCheck(BaseModel):
-    model_config = ConfigDict(extra="ignore")  # Ignore MongoDB's _id field
-    
+# ---------- Models ----------
+def utcnow():
+    return datetime.now(timezone.utc)
+
+
+class ContactCreate(BaseModel):
+    name: str = Field(..., min_length=1, max_length=100)
+    email: EmailStr
+    subject: Optional[str] = Field(default="", max_length=200)
+    message: str = Field(..., min_length=1, max_length=5000)
+
+    @field_validator("name", "message")
+    @classmethod
+    def strip_strings(cls, v: str) -> str:
+        return v.strip()
+
+    @field_validator("subject")
+    @classmethod
+    def strip_subject(cls, v: Optional[str]) -> str:
+        return (v or "").strip()
+
+
+class ContactMessage(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    name: str
+    email: str
+    subject: str = ""
+    message: str
+    created_at: datetime = Field(default_factory=utcnow)
 
-class StatusCheckCreate(BaseModel):
-    client_name: str
 
-# Add your routes to the router instead of directly to app
+class ContactListResponse(BaseModel):
+    total: int
+    items: List[ContactMessage]
+
+
+class VisitsResponse(BaseModel):
+    visits: int
+
+
+# ---------- Routes ----------
 @api_router.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"message": "Farley Portfolio API", "status": "ok"}
 
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.model_dump()
-    status_obj = StatusCheck(**status_dict)
-    
-    # Convert to dict and serialize datetime to ISO string for MongoDB
-    doc = status_obj.model_dump()
-    doc['timestamp'] = doc['timestamp'].isoformat()
-    
-    _ = await db.status_checks.insert_one(doc)
-    return status_obj
 
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    # Exclude MongoDB's _id field from the query results
-    status_checks = await db.status_checks.find({}, {"_id": 0}).to_list(1000)
-    
-    # Convert ISO string timestamps back to datetime objects
-    for check in status_checks:
-        if isinstance(check['timestamp'], str):
-            check['timestamp'] = datetime.fromisoformat(check['timestamp'])
-    
-    return status_checks
+@api_router.get("/health")
+async def health():
+    try:
+        await db.command("ping")
+        return {"status": "ok", "db": "connected"}
+    except Exception as exc:
+        logging.exception("health db ping failed")
+        return {"status": "degraded", "db": "disconnected", "error": str(exc)}
+
+
+@api_router.post("/contact", response_model=ContactMessage, status_code=201)
+async def create_contact(payload: ContactCreate):
+    try:
+        msg = ContactMessage(
+            name=payload.name,
+            email=payload.email,
+            subject=payload.subject or "",
+            message=payload.message,
+        )
+        await db.contact_messages.insert_one(msg.model_dump())
+        return msg
+    except Exception as exc:
+        logging.exception("failed to save contact message")
+        raise HTTPException(status_code=500, detail="Failed to save message")
+
+
+@api_router.get("/contact", response_model=ContactListResponse)
+async def list_contact(
+    limit: int = Query(default=50, ge=1, le=200),
+    skip: int = Query(default=0, ge=0),
+):
+    try:
+        total = await db.contact_messages.count_documents({})
+        cursor = (
+            db.contact_messages.find({}, {"_id": 0})
+            .sort("created_at", -1)
+            .skip(skip)
+            .limit(limit)
+        )
+        items_raw = await cursor.to_list(length=limit)
+        items = [ContactMessage(**doc) for doc in items_raw]
+        return ContactListResponse(total=total, items=items)
+    except Exception:
+        logging.exception("failed to list contact messages")
+        raise HTTPException(status_code=500, detail="Failed to list messages")
+
+
+@api_router.get("/stats/ping", response_model=VisitsResponse)
+async def stats_ping():
+    try:
+        result = await db.stats.find_one_and_update(
+            {"_id": "visits"},
+            {"$inc": {"count": 1}},
+            upsert=True,
+            return_document=True,
+        )
+        # On upsert with no prior doc, result may be None; fetch explicitly
+        if result is None:
+            result = await db.stats.find_one({"_id": "visits"})
+        count = int((result or {}).get("count", 1))
+        return VisitsResponse(visits=count)
+    except Exception:
+        logging.exception("failed to update stats")
+        raise HTTPException(status_code=500, detail="Failed to update stats")
+
 
 # Include the router in the main app
 app.include_router(api_router)
@@ -72,7 +144,7 @@ app.include_router(api_router)
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -80,9 +152,10 @@ app.add_middleware(
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger(__name__)
+
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
