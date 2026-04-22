@@ -1,21 +1,28 @@
-16:42:30.449 Running build in Washington, D.C., USA (East) – iad1
-16:42:30.450 Build machine configuration: 2 cores, 8 GB
-16:42:30.595 Cloning github.com/FARLEY-PIEDRAHITA-OROZCO/farchodev (Branch: main, Commit: cc7e4bf)
-16:42:30.596 Previous build caches not available.
-16:42:30.881 Cloning completed: 286.000ms
-16:42:30.957 Found .vercelignore (repository root)
-16:42:30.962 Removed 28 ignored files defined in .vercelignore
-16:42:30.963   /.emergent/emergent.yml
-16:42:30.963   /.emergent/markers/.bootstrap-complete
-16:42:30.963   /.emergent/markers/.restic-restore-verified
-16:42:30.963   /.git/config
-16:42:30.963   /.git/description
-16:42:30.963   /.git/FETCH_HEAD
-16:42:30.963   /.git/HEAD
-16:42:30.963   /.git/hooks/applypatch-msg.sample
-16:42:30.963   /.git/hooks/commit-msg.sample
-16:42:30.963   /.git/hooks/fsmonitor-watchman.sample
-16:42:31.295 Running "vercel build"
-16:42:32.033 Vercel CLI 51.6.1
-16:42:32.178 Error: The pattern "index.py" defined in `functions` doesn't match any Serverless Functions inside the `api` directory.
-16:42:32.178 Learn More: https://vercel.link/unmatched-function-pattern
+16:48:00.762 Running build in Washington, D.C., USA (East) – iad1
+16:48:00.763 Build machine configuration: 2 cores, 8 GB
+16:48:00.904 Cloning github.com/FARLEY-PIEDRAHITA-OROZCO/farchodev (Branch: main, Commit: 3cfc0b2)
+16:48:00.905 Previous build caches not available.
+16:48:01.183 Cloning completed: 279.000ms
+16:48:01.214 Found .vercelignore (repository root)
+16:48:01.219 Removed 28 ignored files defined in .vercelignore
+16:48:01.219   /.emergent/emergent.yml
+16:48:01.220   /.emergent/markers/.bootstrap-complete
+16:48:01.220   /.emergent/markers/.restic-restore-verified
+16:48:01.220   /.git/config
+16:48:01.220   /.git/description
+16:48:01.220   /.git/FETCH_HEAD
+16:48:01.220   /.git/HEAD
+16:48:01.220   /.git/hooks/applypatch-msg.sample
+16:48:01.220   /.git/hooks/commit-msg.sample
+16:48:01.220   /.git/hooks/fsmonitor-watchman.sample
+16:48:01.490 Running "vercel build"
+16:48:02.367 Vercel CLI 51.6.1
+16:48:02.926 Running "install" command: `pip install -r requirements.txt`...
+16:48:03.859 error: externally-managed-environment
+16:48:03.859 
+16:48:03.859 × This environment is externally managed
+16:48:03.860 ╰─> This Python installation is managed by uv and should not be modified.
+16:48:03.860 
+16:48:03.860 note: If you believe this is a mistake, please contact your Python installation or OS distribution provider. You can override this, at the risk of breaking your Python installation or OS, by passing --break-system-packages.
+16:48:03.860 hint: See PEP 668 for the detailed specification.
+16:48:03.908 Error: Command "pip install -r requirements.txt" exited with 1
