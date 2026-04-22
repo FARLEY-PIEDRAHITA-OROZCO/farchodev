@@ -127,39 +127,115 @@ function makeLaptopScreenTexture() {
 
 function makePictureTexture() {
   const c = document.createElement("canvas");
-  c.width = 256;
-  c.height = 320;
+  c.width = 320;
+  c.height = 400;
   const ctx = c.getContext("2d");
-  // Abstract "glitch" art
-  const g = ctx.createLinearGradient(0, 0, 256, 320);
-  g.addColorStop(0, "#0891b2");
-  g.addColorStop(0.5, "#1e3a8a");
-  g.addColorStop(1, "#0f172a");
+  // Clean tech poster: dark panel with geometric composition + tagline
+  const g = ctx.createLinearGradient(0, 0, 0, 400);
+  g.addColorStop(0, "#0f172a");
+  g.addColorStop(1, "#111b2e");
   ctx.fillStyle = g;
-  ctx.fillRect(0, 0, 256, 320);
-  // Geometric shapes
-  ctx.fillStyle = "rgba(34,211,238,0.7)";
-  ctx.beginPath();
-  ctx.arc(128, 140, 60, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "rgba(59,130,246,0.4)";
-  ctx.fillRect(40, 80, 180, 8);
-  ctx.fillRect(40, 200, 140, 8);
-  ctx.fillRect(40, 220, 100, 8);
-  // Glitch lines
-  for (let i = 0; i < 20; i++) {
-    ctx.fillStyle = `rgba(${Math.random() > 0.5 ? "34,211,238" : "239,68,68"},${
-      0.1 + Math.random() * 0.4
-    })`;
-    ctx.fillRect(0, Math.random() * 320, 256, 1 + Math.random() * 2);
+  ctx.fillRect(0, 0, 320, 400);
+
+  // Subtle border inset
+  ctx.strokeStyle = "rgba(34,211,238,0.25)";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(14, 14, 292, 372);
+
+  // Concentric cyan arcs (radar rings)
+  ctx.lineWidth = 1.5;
+  for (let r = 40; r < 180; r += 28) {
+    ctx.strokeStyle = `rgba(34,211,238,${0.15 + (180 - r) / 400})`;
+    ctx.beginPath();
+    ctx.arc(160, 180, r, 0, Math.PI * 2);
+    ctx.stroke();
   }
-  // Text
-  ctx.fillStyle = "#f8fafc";
-  ctx.font = "bold 16px monospace";
-  ctx.fillText("think.", 80, 280);
+  // Center node
   ctx.fillStyle = "#22d3ee";
-  ctx.font = "bold 16px monospace";
-  ctx.fillText("break.", 128, 280);
+  ctx.beginPath();
+  ctx.arc(160, 180, 5, 0, Math.PI * 2);
+  ctx.fill();
+  // Radar sweep
+  ctx.fillStyle = "rgba(34,211,238,0.18)";
+  ctx.beginPath();
+  ctx.moveTo(160, 180);
+  ctx.arc(160, 180, 170, -Math.PI / 2.4, -Math.PI / 2.4 + 0.6);
+  ctx.closePath();
+  ctx.fill();
+  // Scattered detected points
+  const points = [
+    [100, 90],
+    [230, 130],
+    [70, 220],
+    [245, 240],
+    [190, 80],
+    [130, 270],
+    [220, 200],
+  ];
+  points.forEach(([px, py]) => {
+    ctx.fillStyle = "#f59e0b";
+    ctx.beginPath();
+    ctx.arc(px, py, 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "rgba(245,158,11,0.5)";
+    ctx.beginPath();
+    ctx.arc(px, py, 8, 0, Math.PI * 2);
+    ctx.stroke();
+  });
+
+  // Corner tick marks
+  ctx.strokeStyle = "rgba(34,211,238,0.6)";
+  ctx.lineWidth = 2;
+  const ticks = [
+    [22, 22, 40, 22, 22, 40],
+    [298, 22, 280, 22, 298, 40],
+    [22, 378, 40, 378, 22, 360],
+    [298, 378, 280, 378, 298, 360],
+  ];
+  ticks.forEach(([x1, y1, x2, y2, x3, y3]) => {
+    ctx.beginPath();
+    ctx.moveTo(x2, y2);
+    ctx.lineTo(x1, y1);
+    ctx.lineTo(x3, y3);
+    ctx.stroke();
+  });
+
+  // Title + tagline
+  ctx.fillStyle = "#e2e8f0";
+  ctx.font = "bold 28px 'JetBrains Mono', monospace";
+  ctx.fillText("THINK.", 30, 355);
+  ctx.fillStyle = "#22d3ee";
+  ctx.font = "bold 28px 'JetBrains Mono', monospace";
+  ctx.fillText("BREAK.", 138, 355);
+  ctx.fillStyle = "#94a3b8";
+  ctx.font = "12px 'JetBrains Mono', monospace";
+  ctx.fillText("// QA · SECURITY · CODE", 30, 378);
+  return new THREE.CanvasTexture(c);
+}
+
+function makeStickyNoteTexture(text, bg = "#facc15", color = "#0f172a") {
+  const c = document.createElement("canvas");
+  c.width = 128;
+  c.height = 128;
+  const ctx = c.getContext("2d");
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, 128, 128);
+  // Tape
+  ctx.fillStyle = "rgba(255,255,255,0.35)";
+  ctx.fillRect(40, 2, 48, 12);
+  // Slight shadow gradient
+  const g = ctx.createLinearGradient(0, 0, 128, 128);
+  g.addColorStop(0, "rgba(0,0,0,0)");
+  g.addColorStop(1, "rgba(0,0,0,0.1)");
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 128, 128);
+  // Text
+  ctx.fillStyle = color;
+  ctx.font = "bold 14px 'JetBrains Mono', monospace";
+  const lines = text.split("\n");
+  lines.forEach((line, i) => {
+    ctx.fillText(line, 12, 40 + i * 20);
+  });
   return new THREE.CanvasTexture(c);
 }
 
@@ -713,6 +789,26 @@ export default function HackerRoom() {
     );
     ledRed.position.set(-0.2, 1.67, -1);
     monitorGroup.add(ledRed);
+
+    // Bias lighting behind monitor — rim glow plane
+    const biasMat = new THREE.MeshBasicMaterial({
+      color: 0x22d3ee,
+      transparent: true,
+      opacity: 0.55,
+    });
+    const bias = new THREE.Mesh(new THREE.PlaneGeometry(2.7, 1.65), biasMat);
+    bias.position.set(-1.3, 2.3, -1.2);
+    monitorGroup.add(bias);
+    // Fake soft blur via additional larger plane with lower opacity
+    const biasGlowMat = new THREE.MeshBasicMaterial({
+      color: 0x22d3ee,
+      transparent: true,
+      opacity: 0.2,
+      blending: THREE.AdditiveBlending,
+    });
+    const biasGlow = new THREE.Mesh(new THREE.PlaneGeometry(3.4, 2.2), biasGlowMat);
+    biasGlow.position.set(-1.3, 2.3, -1.25);
+    monitorGroup.add(biasGlow);
     scene.add(monitorGroup);
 
     // ---------- Laptop ----------
@@ -1050,6 +1146,86 @@ export default function HackerRoom() {
     picCanvas.position.set(-3.84, 2.5, -0.5);
     scene.add(picCanvas);
 
+    // ---------- Sticky notes on back wall (left of window) ----------
+    const notes = [
+      { text: "ship\nit.", bg: "#facc15", pos: [-2.7, 3.4, -2.85], tilt: -0.08 },
+      { text: "TODO\ne2e +\nsecurity", bg: "#fb7185", pos: [-3.15, 2.9, -2.85], tilt: 0.12 },
+      { text: "coffee?", bg: "#86efac", pos: [-2.4, 2.6, -2.85], tilt: -0.15 },
+    ];
+    notes.forEach((n) => {
+      const tex = makeStickyNoteTexture(n.text, n.bg);
+      const note = new THREE.Mesh(
+        new THREE.PlaneGeometry(0.38, 0.38),
+        new THREE.MeshBasicMaterial({ map: tex })
+      );
+      note.position.set(n.pos[0], n.pos[1], n.pos[2]);
+      note.rotation.z = n.tilt;
+      scene.add(note);
+    });
+
+    // ---------- Smartphone on desk ----------
+    const phoneGroup = new THREE.Group();
+    const phoneBody = new THREE.Mesh(
+      new THREE.BoxGeometry(0.32, 0.03, 0.6),
+      new THREE.MeshStandardMaterial({
+        color: 0x0b1220,
+        roughness: 0.3,
+        metalness: 0.4,
+      })
+    );
+    phoneBody.position.set(1.2, 1.29, -0.15);
+    phoneBody.rotation.y = 0.3;
+    phoneGroup.add(phoneBody);
+    // Phone screen (subtle glow)
+    const phoneScreen = new THREE.Mesh(
+      new THREE.PlaneGeometry(0.26, 0.54),
+      new THREE.MeshBasicMaterial({ color: 0x22d3ee, transparent: true, opacity: 0.35 })
+    );
+    phoneScreen.rotation.x = -Math.PI / 2;
+    phoneScreen.rotation.z = 0.3;
+    phoneScreen.position.set(1.2, 1.306, -0.15);
+    phoneGroup.add(phoneScreen);
+    scene.add(phoneGroup);
+
+    // ---------- Ceiling pendant lamp ----------
+    const ceilGroup = new THREE.Group();
+    // Cord from ceiling (top at y=5 down to fixture at y=3.7)
+    const cord = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.01, 0.01, 1.3, 8),
+      new THREE.MeshStandardMaterial({ color: 0x1e293b })
+    );
+    cord.position.set(0.6, 4.35, 0);
+    ceilGroup.add(cord);
+    // Lamp shade (inverted cone dome)
+    const pendantShade = new THREE.Mesh(
+      new THREE.ConeGeometry(0.28, 0.3, 24, 1, true),
+      new THREE.MeshStandardMaterial({
+        color: 0x3d4863,
+        roughness: 0.5,
+        metalness: 0.6,
+        side: THREE.DoubleSide,
+      })
+    );
+    pendantShade.position.set(0.6, 3.85, 0);
+    pendantShade.rotation.x = Math.PI;
+    ceilGroup.add(pendantShade);
+    // Pendant bulb
+    const pendantBulb = new THREE.Mesh(
+      new THREE.SphereGeometry(0.08, 16, 16),
+      new THREE.MeshBasicMaterial({
+        color: 0xfff4d8,
+        transparent: true,
+        opacity: 0,
+      })
+    );
+    pendantBulb.position.set(0.6, 3.75, 0);
+    ceilGroup.add(pendantBulb);
+    scene.add(ceilGroup);
+    // Pendant light source
+    const pendantLight = new THREE.PointLight(0xfff0c0, 0, 6, 2);
+    pendantLight.position.set(0.6, 3.7, 0);
+    scene.add(pendantLight);
+
     // ---------- Floating code particles ----------
     const PARTICLE_COUNT = 40;
     const particles = [];
@@ -1199,6 +1375,10 @@ export default function HackerRoom() {
       lampLight.intensity = state.lamp * 3.0;
       bulbMat.opacity = state.lamp;
       lampShadeMat.emissiveIntensity = state.lamp * 0.95;
+      pendantLight.intensity = state.lamp * 1.4;
+      pendantBulb.material.opacity = state.lamp * 0.95;
+      biasMat.opacity = 0.45 + state.lamp * 0.2; // stronger at night
+      biasGlowMat.opacity = 0.15 + state.lamp * 0.1;
       starMat.opacity = state.starOp;
       craterMat.opacity = state.starOp * 0.6;
       skyMat.color.copy(state.skyC);
