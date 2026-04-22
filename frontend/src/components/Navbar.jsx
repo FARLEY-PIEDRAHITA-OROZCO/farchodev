@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { Menu, X, Terminal } from "lucide-react";
+import { Menu, X, Terminal, Sun, Moon } from "lucide-react";
 import { Button } from "./ui/button";
+import { useTheme } from "../context/ThemeContext";
 
 const links = [
   { label: "Inicio", href: "#home" },
@@ -15,6 +16,7 @@ const links = [
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const { theme, toggle } = useTheme();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 30);
@@ -53,7 +55,19 @@ export default function Navbar() {
           ))}
         </div>
 
-        <div className="hidden lg:block">
+        <div className="hidden lg:flex items-center gap-3">
+          <button
+            onClick={toggle}
+            aria-label={theme === "night" ? "Cambiar a modo día" : "Cambiar a modo noche"}
+            title={theme === "night" ? "Modo día" : "Modo noche"}
+            className="w-9 h-9 rounded-lg bg-white/[0.03] border border-white/10 hover:border-cyan-400/40 text-slate-300 hover:text-cyan-300 flex items-center justify-center transition-colors"
+          >
+            {theme === "night" ? (
+              <Moon className="w-4 h-4" />
+            ) : (
+              <Sun className="w-4 h-4" />
+            )}
+          </button>
           <Button
             asChild
             className="bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-medium"

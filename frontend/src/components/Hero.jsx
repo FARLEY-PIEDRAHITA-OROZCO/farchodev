@@ -1,11 +1,14 @@
 import React from "react";
-import Scene3D from "./Scene3D";
-import MatrixRain from "./MatrixRain";
+import HackerRoom from "./HackerRoom";
 import { Button } from "./ui/button";
-import { ArrowDown, Download, Shield, Bug } from "lucide-react";
+import { ArrowDown, Download, Shield, Bug, Lightbulb } from "lucide-react";
 import { profile } from "../data/mock";
+import { useTheme } from "../context/ThemeContext";
 
 export default function Hero() {
+  const { theme } = useTheme();
+  const isDay = theme === "day";
+
   return (
     <section
       id="home"
@@ -13,7 +16,7 @@ export default function Hero() {
     >
       {/* Background grid */}
       <div
-        className="absolute inset-0 opacity-[0.07] pointer-events-none"
+        className="hero-grid absolute inset-0 opacity-[0.09] pointer-events-none"
         style={{
           backgroundImage:
             "linear-gradient(rgba(96,165,250,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(96,165,250,0.6) 1px, transparent 1px)",
@@ -22,13 +25,33 @@ export default function Hero() {
             "radial-gradient(ellipse at center, black 40%, transparent 80%)"
         }}
       />
-      {/* Glow */}
-      <div className="absolute top-1/3 -left-40 w-[500px] h-[500px] rounded-full bg-blue-600/20 blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-10 right-0 w-[420px] h-[420px] rounded-full bg-cyan-500/10 blur-[120px] pointer-events-none" />
 
-      <div className="relative max-w-7xl mx-auto px-6 lg:px-10 grid lg:grid-cols-2 gap-10 items-center min-h-[calc(100vh-6rem)]">
-        <div className="space-y-7">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-cyan-300">
+      {/* Glow blobs */}
+      <div className="absolute top-1/4 -left-40 w-[500px] h-[500px] rounded-full bg-blue-600/20 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-[520px] h-[520px] rounded-full bg-cyan-500/10 blur-[140px] pointer-events-none" />
+
+      {/* 3D scene — bleeds into hero without borders/rectangle */}
+      <div
+        className="absolute inset-y-0 right-0 w-full lg:w-[62%] pointer-events-none"
+        style={{
+          maskImage:
+            "radial-gradient(ellipse 85% 85% at 65% 55%, black 55%, transparent 95%)",
+          WebkitMaskImage:
+            "radial-gradient(ellipse 85% 85% at 65% 55%, black 55%, transparent 95%)"
+        }}
+      >
+        <div className="absolute inset-0 pointer-events-auto">
+          <HackerRoom />
+        </div>
+      </div>
+
+      {/* Floor reflection vignette (subtle) */}
+      <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-[#05070E] to-transparent pointer-events-none" />
+
+      {/* Content */}
+      <div className="relative max-w-7xl mx-auto px-6 lg:px-10 grid lg:grid-cols-2 gap-10 items-center min-h-[calc(100vh-6rem)] pointer-events-none">
+        <div className="space-y-7 relative z-10 pointer-events-auto">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-cyan-300 backdrop-blur-sm">
             <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
             Disponible para nuevos retos
           </div>
@@ -67,7 +90,7 @@ export default function Hero() {
               asChild
               variant="outline"
               size="lg"
-              className="border-white/15 bg-white/5 text-white hover:bg-white/10 hover:text-white"
+              className="border-white/15 bg-white/5 text-white hover:bg-white/10 hover:text-white backdrop-blur-sm"
             >
               <a href="#contact">
                 <Download className="mr-2 w-4 h-4" />
@@ -87,43 +110,29 @@ export default function Hero() {
               <span>Cybersecurity Jr.</span>
             </div>
           </div>
-        </div>
 
-        {/* 3D Scene */}
-        <div className="relative h-[420px] lg:h-[560px] w-full">
-          <div className="absolute inset-0 rounded-3xl border border-white/5 bg-gradient-to-br from-[#060B1A] to-[#05070E] overflow-hidden">
-            <MatrixRain />
-            <div className="absolute inset-0">
-              <Scene3D />
-            </div>
-            {/* Scanline overlay */}
-            <div
-              className="absolute inset-0 pointer-events-none mix-blend-overlay opacity-30"
-              style={{
-                backgroundImage:
-                  "repeating-linear-gradient(to bottom, rgba(34,211,238,0.06) 0px, rgba(34,211,238,0.06) 1px, transparent 1px, transparent 3px)"
-              }}
-            />
-          </div>
-          {/* Corner decorations */}
-          <div className="absolute top-3 left-3 w-8 h-8 border-l-2 border-t-2 border-cyan-400/60" />
-          <div className="absolute top-3 right-3 w-8 h-8 border-r-2 border-t-2 border-cyan-400/60" />
-          <div className="absolute bottom-3 left-3 w-8 h-8 border-l-2 border-b-2 border-cyan-400/60" />
-          <div className="absolute bottom-3 right-3 w-8 h-8 border-r-2 border-b-2 border-cyan-400/60" />
-
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 font-mono text-[10px] tracking-widest text-cyan-300/80 uppercase bg-black/40 px-2 py-0.5 rounded">
-            [ network monitor · active ]
+          {/* Lamp hint */}
+          <div className="inline-flex items-center gap-2 pt-4 text-xs font-mono text-cyan-300/80">
+            <Lightbulb className={`w-3.5 h-3.5 ${isDay ? "" : "text-amber-300"}`} />
+            <span>
+              {isDay
+                ? "Haz clic en la lámpara para encenderla"
+                : "Haz clic en la lámpara para abrir las cortinas"}
+            </span>
           </div>
         </div>
+
+        {/* Right column empty — scene occupies the background; pointer-events-none so canvas receives clicks */}
+        <div className="hidden lg:block pointer-events-none" />
       </div>
 
       {/* Stats */}
-      <div className="relative max-w-7xl mx-auto px-6 lg:px-10 mt-12">
+      <div className="relative max-w-7xl mx-auto px-6 lg:px-10 mt-12 z-10 pointer-events-auto">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {profile.stats.map((s) => (
             <div
               key={s.label}
-              className="relative p-5 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-sm hover:border-cyan-400/40 transition-colors group"
+              className="relative p-5 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-md hover:border-cyan-400/40 transition-colors group"
             >
               <div className="text-3xl font-semibold text-white">
                 {s.value}
