@@ -41,7 +41,7 @@ export default function Navbar() {
             <Terminal className="w-4 h-4 text-cyan-300" />
           </div>
           <span className="font-mono text-sm tracking-wider text-white">
-            farley<span className="text-cyan-400">.dev</span>
+            farcho<span className="text-cyan-400">.dev</span>
           </span>
         </a>
 

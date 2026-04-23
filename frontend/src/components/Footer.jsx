@@ -12,7 +12,7 @@ export default function Footer() {
           </div>
           <div>
             <div className="font-mono text-sm text-white">
-              farley<span className="text-cyan-400">.dev</span>
+              farcho<span className="text-cyan-400">.dev</span>
             </div>
             <div className="text-xs text-slate-500">
               © {new Date().getFullYear()} {profile.name}. Todos los derechos reservados.

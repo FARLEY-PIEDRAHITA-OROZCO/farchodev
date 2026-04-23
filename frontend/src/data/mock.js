@@ -6,10 +6,10 @@ export const profile = {
   tagline: "Breaking software to make it stronger. Studying the art of digital defense.",
   location: "Colombia",
   email: "frlpiedrahita@gmail.com",
-  phone: "+57 300 000 0000",
+  phone: "+57 302 251 5116",
   bio: "Desarrollador QA con enfoque en automatización de pruebas y estudiante junior de ciberseguridad. Combino la precisión del testing con la mentalidad ofensiva de un aprendiz de seguridad. Mi objetivo: construir software que no solo funcione, sino que resista.",
   social: {
-    github: "https://github.com/farleyp",
+    github: "https://github.com/FARLEY-PIEDRAHITA-OROZCO",
     linkedin: "https://linkedin.com/in/farleyp",
     twitter: "https://twitter.com/farleyp",
     tryhackme: "https://tryhackme.com/p/farleyp"
