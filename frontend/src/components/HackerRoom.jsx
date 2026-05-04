@@ -1501,13 +1501,13 @@ export default function HackerRoom() {
       }
       return {
         lamp: 1,
-        ambient: 0.3,
-        winI: 0.4,
+        ambient: 0.55,
+        winI: 0.75,
         curtainY: 1,
         winC: new THREE.Color(0x7c9bd1),
         skyC: new THREE.Color(0x0a1025),
-        wallC: new THREE.Color(0x202635),
-        floorC: new THREE.Color(0x1a1f2e),
+        wallC: new THREE.Color(0x2a3045),
+        floorC: new THREE.Color(0x242b3e),
         starOp: 1,
         celestialC: new THREE.Color(0xe8ecff),
         skylineOp: 0,
@@ -1553,10 +1553,10 @@ export default function HackerRoom() {
       ambient.intensity = state.ambient;
       windowLight.intensity = state.winI;
       windowLight.color.copy(state.winC);
-      lampLight.intensity = state.lamp * 3.0;
+      lampLight.intensity = state.lamp * 3.5;
       bulbMat.opacity = state.lamp;
       lampShadeMat.emissiveIntensity = state.lamp * 0.95;
-      pendantLight.intensity = state.lamp * 1.4;
+      pendantLight.intensity = state.lamp * 1.8;
       pendantBulb.material.opacity = state.lamp * 0.95;
       biasMat.opacity = 0.45 + state.lamp * 0.2; // stronger at night
       biasGlowMat.opacity = 0.15 + state.lamp * 0.1;
