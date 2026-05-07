@@ -1515,11 +1515,27 @@ export default function HackerRoom() {
     };
 
     // ---------- Animation loop ----------
+    // Prefers reduced motion
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    // Visibility tracking for pausing rAF when off-screen
+    let isVisible = true;
+    const visObserver = new IntersectionObserver(
+      (entries) => { isVisible = entries[0].isIntersecting; },
+      { threshold: 0 }
+    );
+    visObserver.observe(mount);
+
     const clock = new THREE.Clock();
     let frameId;
     const lerpNum = (a, b, t) => a + (b - a) * t;
 
     const animate = () => {
+      if (!isVisible) {
+        frameId = requestAnimationFrame(animate);
+        return;
+      }
+
       const delta = Math.min(clock.getDelta(), 0.05);
       const elapsed = clock.getElapsedTime();
 
@@ -1578,60 +1594,62 @@ export default function HackerRoom() {
         tasselGroup.rotation.z *= 0.9;
       }
 
-      // Celestial drifts
-      celestial.position.x = 0.6 + Math.sin(elapsed * 0.08) * 0.3;
-      crater1.position.x = 0.5 + Math.sin(elapsed * 0.08) * 0.3;
-      crater2.position.x = 0.7 + Math.sin(elapsed * 0.08) * 0.3;
+      if (!prefersReduced) {
+        // Celestial drifts
+        celestial.position.x = 0.6 + Math.sin(elapsed * 0.08) * 0.3;
+        crater1.position.x = 0.5 + Math.sin(elapsed * 0.08) * 0.3;
+        crater2.position.x = 0.7 + Math.sin(elapsed * 0.08) * 0.3;
 
-      // LED strip subtle pulse
-      ledStripMat.opacity = 0.55 + Math.sin(elapsed * 1.4) * 0.25;
+        // LED strip subtle pulse
+        ledStripMat.opacity = 0.55 + Math.sin(elapsed * 1.4) * 0.25;
 
-      // Monitor LED blink
-      ledGreen.material.color.setHex(0x22c55e);
-      const blink = Math.sin(elapsed * 3) > 0.9 ? 1 : 0.3;
-      ledRed.material.opacity = blink;
-      ledRed.material.transparent = true;
+        // Monitor LED blink
+        ledGreen.material.color.setHex(0x22c55e);
+        const blink = Math.sin(elapsed * 3) > 0.9 ? 1 : 0.3;
+        ledRed.material.opacity = blink;
+        ledRed.material.transparent = true;
 
-      // Clock hands — normal tick + fast spin during reveal
-      const baseHourSpeed = 0.02;
-      const baseMinuteSpeed = 0.25;
-      const revealBoost = inReveal ? 8 * (1 - revealT / 2) : 0;
-      hourHand.rotation.z -= delta * (baseHourSpeed + revealBoost);
-      minuteHand.rotation.z -= delta * (baseMinuteSpeed + revealBoost * 2);
+        // Clock hands — normal tick + fast spin during reveal
+        const baseHourSpeed = 0.02;
+        const baseMinuteSpeed = 0.25;
+        const revealBoost = inReveal ? 8 * (1 - revealT / 2) : 0;
+        hourHand.rotation.z -= delta * (baseHourSpeed + revealBoost);
+        minuteHand.rotation.z -= delta * (baseMinuteSpeed + revealBoost * 2);
 
-      // Plant wobble (stronger during reveal)
-      leaves.forEach((leaf) => {
-        const { basePos, phase } = leaf.userData;
-        const wobble = inReveal ? 0.06 * (1 - revealT / 2) : 0.008;
-        leaf.position.x = basePos[0] + Math.sin(elapsed * 2 + phase) * wobble;
-        leaf.position.z = basePos[2] + Math.cos(elapsed * 1.7 + phase) * wobble;
-      });
+        // Plant wobble (stronger during reveal)
+        leaves.forEach((leaf) => {
+          const { basePos, phase } = leaf.userData;
+          const wobble = inReveal ? 0.06 * (1 - revealT / 2) : 0.008;
+          leaf.position.x = basePos[0] + Math.sin(elapsed * 2 + phase) * wobble;
+          leaf.position.z = basePos[2] + Math.cos(elapsed * 1.7 + phase) * wobble;
+        });
 
-      // Coffee steam particles (night only: more visible)
-      const steamVisible = state.lamp; // tied to night-ness
-      steamParticles.forEach((p, i) => {
-        p.userData.t += delta * p.userData.speed;
-        if (p.userData.t > 1) p.userData.t = 0;
-        const t = p.userData.t;
-        p.position.x = p.userData.ox + Math.sin(t * Math.PI * 2 + i) * 0.08;
-        p.position.y = 1.63 + t * 0.9;
-        p.position.z = -0.55;
-        p.material.opacity = steamVisible * (1 - t) * 0.4;
-        p.scale.setScalar(1 + t * 1.8);
-      });
+        // Coffee steam particles (night only: more visible)
+        const steamVisible = state.lamp;
+        steamParticles.forEach((p, i) => {
+          p.userData.t += delta * p.userData.speed;
+          if (p.userData.t > 1) p.userData.t = 0;
+          const t = p.userData.t;
+          p.position.x = p.userData.ox + Math.sin(t * Math.PI * 2 + i) * 0.08;
+          p.position.y = 1.63 + t * 0.9;
+          p.position.z = -0.55;
+          p.material.opacity = steamVisible * (1 - t) * 0.4;
+          p.scale.setScalar(1 + t * 1.8);
+        });
 
-      // Floating code particles
-      particles.forEach((p, i) => {
-        const { ox, oy, oz, speed } = p.userData;
-        const t = elapsed * speed + i;
-        p.position.x = ox + Math.sin(t * 0.6) * 0.12;
-        p.position.y = oy + Math.sin(t) * 0.08;
-        p.position.z = oz + Math.cos(t * 0.5) * 0.08;
-      });
+        // Floating code particles
+        particles.forEach((p, i) => {
+          const { ox, oy, oz, speed } = p.userData;
+          const t = elapsed * speed + i;
+          p.position.x = ox + Math.sin(t * 0.6) * 0.12;
+          p.position.y = oy + Math.sin(t) * 0.08;
+          p.position.z = oz + Math.cos(t * 0.5) * 0.08;
+        });
 
-      // Hint ring
-      hintMat.opacity = 0.15 + Math.sin(elapsed * 2.5) * 0.1;
-      hintRing.rotation.z += delta * 0.5;
+        // Hint ring
+        hintMat.opacity = 0.15 + Math.sin(elapsed * 2.5) * 0.1;
+        hintRing.rotation.z += delta * 0.5;
+      }
 
       renderer.render(scene, camera);
       frameId = requestAnimationFrame(animate);
@@ -1654,6 +1672,7 @@ export default function HackerRoom() {
 
     // ---------- Cleanup ----------
     return () => {
+      visObserver.disconnect();
       cancelAnimationFrame(frameId);
       window.removeEventListener("resize", handleResize);
       renderer.domElement.removeEventListener("pointermove", onPointerMove);

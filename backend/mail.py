@@ -58,11 +58,8 @@ def _send_sync(cfg: dict, subject: str, body_text: str, body_html: str, reply_to
     else:
         with smtplib.SMTP(cfg["host"], cfg["port"], timeout=15) as server:
             server.ehlo()
-            try:
-                server.starttls(context=context)
-                server.ehlo()
-            except Exception:
-                pass
+            server.starttls(context=context)
+            server.ehlo()
             server.login(cfg["user"], cfg["pwd"])
             server.send_message(msg)
 

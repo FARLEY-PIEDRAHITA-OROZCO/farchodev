@@ -28,7 +28,14 @@ export default function About() {
             {/* Avatar block */}
             <div className="relative mt-8 p-6 rounded-3xl bg-gradient-to-br from-white/[0.04] to-white/[0.01] border border-white/10 backdrop-blur-sm">
               <div className="flex items-center gap-4">
-                <div className="relative group cursor-pointer" onClick={() => setLightboxOpen(true)}>
+                <div
+                  className="relative group cursor-pointer"
+                  onClick={() => setLightboxOpen(true)}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setLightboxOpen(true); } }}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Open portrait of ${profile.name}`}
+                >
                   <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-cyan-400/30 to-blue-500/30 border border-cyan-400/40 overflow-hidden transition-transform duration-300 group-hover:scale-105 group-hover:border-cyan-400/60">
                     <img
                       src="/profile.jpg"

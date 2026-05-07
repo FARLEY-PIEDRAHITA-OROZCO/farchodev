@@ -35,6 +35,8 @@ export default function Footer() {
             <a
               key={i}
               href={s.href}
+              target="_blank"
+              rel="noopener noreferrer"
               className="w-9 h-9 rounded-lg bg-white/[0.03] border border-white/10 hover:border-cyan-400/40 hover:text-cyan-300 text-slate-300 flex items-center justify-center transition-colors"
             >
               <s.icon className="w-4 h-4" />

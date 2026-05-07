@@ -83,9 +83,58 @@ canvas {
   animation: scanline-reveal 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
+/* Terminal typing line entrance */
+@keyframes terminal-line-in {
+  0% {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.terminal-line {
+  animation: terminal-line-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Animated border glow for terminal window */
+@keyframes border-pulse {
+  0%, 100% {
+    border-color: rgba(34, 211, 238, 0.15);
+    box-shadow: 0 0 40px rgba(34, 211, 238, 0.04);
+  }
+  50% {
+    border-color: rgba(34, 211, 238, 0.25);
+    box-shadow: 0 0 60px rgba(34, 211, 238, 0.08);
+  }
+}
+
+.terminal-border-glow {
+  animation: border-pulse 4s ease-in-out infinite;
+}
+
+/* Scanline overlay for terminal */
+.terminal-scanlines::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(34, 211, 238, 0.015) 2px,
+    rgba(34, 211, 238, 0.015) 4px
+  );
+  pointer-events: none;
+}
+
 /* Reduce motion */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .reveal { opacity: 1; transform: none; transition: none; }
   .scanline-reveal { animation: none; }
+  .terminal-border-glow { animation: none; }
+  .terminal-line { animation: none; opacity: 1; transform: none; }
 }

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import axios from "axios";
 import Reveal from "./Reveal";
 import { profile } from "../data/mock";
@@ -8,18 +8,29 @@ import { Textarea } from "./ui/textarea";
 import { useToast } from "../hooks/use-toast";
 import { Mail, Phone, MapPin, Github, Linkedin, Send, Terminal } from "lucide-react";
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const API_BASE = process.env.REACT_APP_BACKEND_URL;
+const API = API_BASE ? `${API_BASE}/api` : null;
 
 export default function Contact() {
   const { toast } = useToast();
   const [form, setForm] = useState({ name: "", email: "", subject: "", message: "", website: "" });
   const [loading, setLoading] = useState(false);
 
-  const handle = (k) => (e) => setForm({ ...form, [k]: e.target.value });
+  const handle = useCallback((k) => (e) => {
+    const v = k === "email" ? e.target.value.trim() : e.target.value;
+    setForm((prev) => ({ ...prev, [k]: v }));
+  }, []);
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    if (!form.name || !form.email || !form.message) {
+    if (!API) {
+      toast({
+        title: "Error de configuración",
+        description: "El backend no está configurado."
+      });
+      return;
+    }
+    if (!form.name.trim() || !form.email.trim() || !form.message.trim()) {
       toast({
         title: "Campos incompletos",
         description: "Por favor completa nombre, email y mensaje."
@@ -89,15 +100,15 @@ export default function Contact() {
                   <div className="text-sm text-white group-hover:text-cyan-300 transition-colors">{profile.email}</div>
                 </div>
               </a>
-              <div className="flex items-center gap-3 p-4 rounded-xl bg-white/[0.03] border border-white/10">
+              <a href={`tel:${profile.phone}`} className="flex items-center gap-3 p-4 rounded-xl bg-white/[0.03] border border-white/10 hover:border-cyan-400/40 transition-colors group">
                 <div className="w-10 h-10 rounded-lg bg-cyan-400/10 border border-cyan-400/30 flex items-center justify-center">
                   <Phone className="w-4 h-4 text-cyan-300" />
                 </div>
                 <div>
                   <div className="text-xs text-slate-500 uppercase tracking-wider">Teléfono</div>
-                  <div className="text-sm text-white">{profile.phone}</div>
+                  <div className="text-sm text-white group-hover:text-cyan-300 transition-colors">{profile.phone}</div>
                 </div>
-              </div>
+              </a>
               <div className="flex items-center gap-3 p-4 rounded-xl bg-white/[0.03] border border-white/10">
                 <div className="w-10 h-10 rounded-lg bg-cyan-400/10 border border-cyan-400/30 flex items-center justify-center">
                   <MapPin className="w-4 h-4 text-cyan-300" />
@@ -118,6 +129,8 @@ export default function Contact() {
                 <a
                   key={i}
                   href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="w-10 h-10 rounded-lg bg-white/[0.03] border border-white/10 hover:border-cyan-400/40 hover:text-cyan-300 text-slate-300 flex items-center justify-center transition-colors"
                 >
                   <s.icon className="w-4 h-4" />
@@ -151,10 +164,11 @@ export default function Contact() {
 
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-xs font-mono text-slate-400 uppercase tracking-wider">
+                <label htmlFor="contact-name" className="text-xs font-mono text-slate-400 uppercase tracking-wider">
                   Nombre
                 </label>
                 <Input
+                  id="contact-name"
                   value={form.name}
                   onChange={handle("name")}
                   placeholder="Tu nombre"
@@ -162,10 +176,11 @@ export default function Contact() {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-mono text-slate-400 uppercase tracking-wider">
+                <label htmlFor="contact-email" className="text-xs font-mono text-slate-400 uppercase tracking-wider">
                   Email
                 </label>
                 <Input
+                  id="contact-email"
                   type="email"
                   value={form.email}
                   onChange={handle("email")}
@@ -176,10 +191,11 @@ export default function Contact() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-mono text-slate-400 uppercase tracking-wider">
+              <label htmlFor="contact-subject" className="text-xs font-mono text-slate-400 uppercase tracking-wider">
                 Asunto
               </label>
               <Input
+                id="contact-subject"
                 value={form.subject}
                 onChange={handle("subject")}
                 placeholder="¿De qué hablamos?"
@@ -188,10 +204,11 @@ export default function Contact() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-mono text-slate-400 uppercase tracking-wider">
+              <label htmlFor="contact-message" className="text-xs font-mono text-slate-400 uppercase tracking-wider">
                 Mensaje
               </label>
               <Textarea
+                id="contact-message"
                 rows={6}
                 value={form.message}
                 onChange={handle("message")}

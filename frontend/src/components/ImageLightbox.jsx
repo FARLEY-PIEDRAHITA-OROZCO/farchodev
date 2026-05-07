@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { X, Terminal } from "lucide-react";
 
 const CMD = "farcho@portfolio:~$ view_identity --identity ./profile.jpg";
@@ -6,6 +6,9 @@ const CMD = "farcho@portfolio:~$ view_identity --identity ./profile.jpg";
 export default function ImageLightbox({ src, alt, isOpen, onClose }) {
   const [typed, setTyped] = useState("");
   const [booted, setBooted] = useState(false);
+  const overlayRef = useRef(null);
+  const closeBtnRef = useRef(null);
+  const bootTimeoutRef = useRef(null);
 
   useEffect(() => {
     if (!isOpen) {
@@ -20,26 +23,38 @@ export default function ImageLightbox({ src, alt, isOpen, onClose }) {
       setTyped(CMD.slice(0, i));
       if (i >= CMD.length) {
         clearInterval(interval);
-        setTimeout(() => setBooted(true), 600);
+        bootTimeoutRef.current = setTimeout(() => setBooted(true), 600);
       }
     }, 35);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      if (bootTimeoutRef.current) clearTimeout(bootTimeoutRef.current);
+    };
   }, [isOpen]);
+
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === "Escape") onClose();
+  }, [onClose]);
 
   useEffect(() => {
     if (!isOpen) return;
-    const handler = (e) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [isOpen, onClose]);
+    document.addEventListener("keydown", handleKeyDown);
+    closeBtnRef.current?.focus();
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, handleKeyDown]);
 
   if (!isOpen) return null;
 
   return (
     <div
+      ref={overlayRef}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Profile image"
       className="fixed inset-0 z-50 flex items-center justify-center bg-[#05070E]/95 backdrop-blur-sm p-4"
       onClick={onClose}
+      onKeyDown={(e) => { if (e.key === "Tab") e.preventDefault(); }}
     >
       <div
         className="relative w-full max-w-2xl rounded-2xl border border-cyan-400/30 bg-[#0a0d1a] shadow-[0_0_80px_rgba(34,211,238,0.12)] overflow-hidden"
@@ -59,6 +74,7 @@ export default function ImageLightbox({ src, alt, isOpen, onClose }) {
             </span>
           </div>
           <button
+            ref={closeBtnRef}
             onClick={onClose}
             className="w-7 h-7 rounded-lg bg-white/[0.03] border border-white/10 hover:border-red-400/40 hover:text-red-300 text-slate-400 flex items-center justify-center transition-colors"
           >

@@ -1,31 +1,33 @@
-import React, { useState, useRef } from "react";
+import React, { useRef, useCallback } from "react";
 import Reveal from "./Reveal";
 import { projects } from "../data/mock";
 import { Github, ExternalLink, Filter } from "lucide-react";
 
 function TiltCard({ project }) {
   const ref = useRef(null);
-  const [style, setStyle] = useState({});
+  const frameRef = useRef(null);
 
-  const handleMove = (e) => {
-    const el = ref.current;
-    if (!el) return;
-    const r = el.getBoundingClientRect();
-    const x = (e.clientX - r.left) / r.width;
-    const y = (e.clientY - r.top) / r.height;
-    const rotY = (x - 0.5) * 12;
-    const rotX = (0.5 - y) * 12;
-    setStyle({
-      transform: `perspective(900px) rotateX(${rotX}deg) rotateY(${rotY}deg) translateZ(0)`,
-      transition: "transform 0.05s linear"
+  const handleMove = useCallback((e) => {
+    if (frameRef.current) cancelAnimationFrame(frameRef.current);
+    frameRef.current = requestAnimationFrame(() => {
+      const el = ref.current;
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width;
+      const y = (e.clientY - r.top) / r.height;
+      const rotY = (x - 0.5) * 12;
+      const rotX = (0.5 - y) * 12;
+      el.style.transform = `perspective(900px) rotateX(${rotX}deg) rotateY(${rotY}deg) translateZ(0)`;
+      el.style.transition = "transform 0.05s linear";
     });
-  };
+  }, []);
 
   const reset = () => {
-    setStyle({
-      transform: "perspective(900px) rotateX(0deg) rotateY(0deg)",
-      transition: "transform 0.4s ease"
-    });
+    if (frameRef.current) cancelAnimationFrame(frameRef.current);
+    const el = ref.current;
+    if (!el) return;
+    el.style.transform = "perspective(900px) rotateX(0deg) rotateY(0deg)";
+    el.style.transition = "transform 0.4s ease";
   };
 
   return (
@@ -33,7 +35,6 @@ function TiltCard({ project }) {
       ref={ref}
       onMouseMove={handleMove}
       onMouseLeave={reset}
-      style={style}
       className="group relative rounded-3xl overflow-hidden border border-white/10 bg-gradient-to-br from-white/[0.04] to-white/[0.01] hover:border-cyan-400/40 transition-colors"
     >
       <div className="relative aspect-[16/10] overflow-hidden">

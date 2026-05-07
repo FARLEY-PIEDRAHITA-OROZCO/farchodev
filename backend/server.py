@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Query, Request
+from fastapi import FastAPI, APIRouter, HTTPException, Query, Request, Header
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -10,9 +10,12 @@ from typing import List, Optional
 import uuid
 from collections import defaultdict, deque
 from datetime import datetime, timedelta, timezone
+import secrets
 
-from mail import send_contact_email
-
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / ".env")
@@ -80,12 +83,6 @@ _rate_bucket: "dict[str, deque]" = defaultdict(deque)
 
 
 def _client_ip(request: Request) -> str:
-    fwd = request.headers.get("x-forwarded-for")
-    if fwd:
-        return fwd.split(",")[0].strip()
-    real = request.headers.get("x-real-ip")
-    if real:
-        return real.strip()
     return request.client.host if request.client else "unknown"
 
 
@@ -115,7 +112,7 @@ async def health():
         return {"status": "ok", "db": "connected"}
     except Exception as exc:
         logging.exception("health db ping failed")
-        return {"status": "degraded", "db": "disconnected", "error": str(exc)}
+        return {"status": "degraded", "db": "disconnected"}
 
 
 @api_router.post("/contact", response_model=ContactMessage, status_code=201)
@@ -170,7 +167,11 @@ async def create_contact(payload: ContactCreate, request: Request):
 async def list_contact(
     limit: int = Query(default=50, ge=1, le=200),
     skip: int = Query(default=0, ge=0),
+    authorization: Optional[str] = Header(default=None),
 ):
+    expected = os.environ.get("API_KEY")
+    if not expected or authorization != f"Bearer {expected}":
+        raise HTTPException(status_code=401, detail="Unauthorized")
     try:
         total = await db.contact_messages.count_documents({})
         cursor = (
@@ -209,19 +210,17 @@ async def stats_ping():
 # Include the router in the main app
 app.include_router(api_router)
 
+origins_str = os.environ.get("CORS_ORIGINS", "http://localhost:3000")
+allowed_origins = [o.strip() for o in origins_str.split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=["*"],
+    allow_origins=allowed_origins if allowed_origins else ["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-)
 logger = logging.getLogger(__name__)
 
 
