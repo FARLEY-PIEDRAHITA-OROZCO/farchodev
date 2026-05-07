@@ -1,10 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import Reveal from "./Reveal";
+import ImageLightbox from "./ImageLightbox";
 import { profile } from "../data/mock";
-import { MapPin, Mail, Github, Linkedin, Shield, Bug, Code2 } from "lucide-react";
+import { MapPin, Mail, Github, Linkedin, Shield, Bug, Code2, Expand } from "lucide-react";
 
 export default function About() {
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   return (
+    <>
     <section id="about" className="relative py-28 px-6 lg:px-10">
       <div className="max-w-7xl mx-auto">
         <div className="grid lg:grid-cols-5 gap-12">
@@ -25,13 +28,20 @@ export default function About() {
             {/* Avatar block */}
             <div className="relative mt-8 p-6 rounded-3xl bg-gradient-to-br from-white/[0.04] to-white/[0.01] border border-white/10 backdrop-blur-sm">
               <div className="flex items-center gap-4">
-                <div className="relative">
-                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-cyan-400/30 to-blue-500/30 border border-cyan-400/40 flex items-center justify-center">
-                    <span className="text-2xl font-mono font-semibold text-white">
-                      FP
+                <div className="relative group cursor-pointer" onClick={() => setLightboxOpen(true)}>
+                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-cyan-400/30 to-blue-500/30 border border-cyan-400/40 overflow-hidden transition-transform duration-300 group-hover:scale-105 group-hover:border-cyan-400/60">
+                    <img
+                      src="/profile.jpg"
+                      alt={profile.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="absolute -bottom-1 -right-1 flex items-center gap-1">
+                    <span className="w-5 h-5 rounded-full bg-emerald-400 border-2 border-[#05070E]" />
+                    <span className="w-5 h-5 rounded-full bg-cyan-400/20 border border-cyan-400/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <Expand className="w-3 h-3 text-cyan-300" />
                     </span>
                   </div>
-                  <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-400 border-2 border-[#05070E]" />
                 </div>
                 <div>
                   <div className="text-white font-medium">{profile.name}</div>
@@ -110,5 +120,13 @@ export default function About() {
         </div>
       </div>
     </section>
+
+      <ImageLightbox
+        src="/profile.jpg"
+        alt={profile.name}
+        isOpen={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
+      />
+    </>
   );
 }

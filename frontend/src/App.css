@@ -60,8 +60,32 @@ canvas {
   overflow: hidden !important;
 }
 
+/* Scanline reveal for image lightbox */
+@keyframes scanline-reveal {
+  0% {
+    clip-path: inset(0 0 100% 0);
+    filter: brightness(2) hue-rotate(90deg);
+  }
+  30% {
+    clip-path: inset(0 0 40% 0);
+    filter: brightness(1.5) hue-rotate(45deg);
+  }
+  60% {
+    clip-path: inset(60% 0 0 0);
+  }
+  100% {
+    clip-path: inset(0);
+    filter: brightness(1) hue-rotate(0deg);
+  }
+}
+
+.scanline-reveal {
+  animation: scanline-reveal 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
 /* Reduce motion */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .reveal { opacity: 1; transform: none; transition: none; }
+  .scanline-reveal { animation: none; }
 }
