@@ -81,55 +81,73 @@
 
 ---
 
-## 🚀 Setup & Run (Emergent environment)
-
-El proyecto ya está configurado en este entorno y corre bajo `supervisor`. Los .env NO deben modificarse manualmente en producción.
+## 🚀 Setup & Run (Local Development)
 
 ### Prerequisites
-- Python 3.11+
-- Node 18+
-- MongoDB corriendo localmente (ya provisionado en `mongodb://localhost:27017`)
+- **Python 3.11+**
+- **Node 18+**
+- **MongoDB Atlas** (ya configurado — no requiere instancia local)
 
 ### Environment variables
 
-**`backend/.env`** (ya configurado):
+Los archivos `.env` ya están configurados con valores reales. No es necesario modificarlos para desarrollo local.
+
+**`backend/.env`:**
 ```env
-MONGO_URL="mongodb://localhost:27017"
-DB_NAME="test_database"
+MONGO_URL="mongodb+srv://frlpiedrahita_db_user:farchodev_2026@farchodev.umhwbmm.mongodb.net/?appName=farchodev"
+DB_NAME="farley_portfolio"
 CORS_ORIGINS="*"
 SMTP_HOST="smtp.gmail.com"
 SMTP_PORT="465"
 SMTP_USER="frlpiedrahita@gmail.com"
-SMTP_PASSWORD="<app password, no spaces>"
+SMTP_PASSWORD="<app password>"
 SMTP_FROM_NAME="Farley Portfolio"
 CONTACT_TO_EMAIL="frlpiedrahita@gmail.com"
 ```
 
-**`frontend/.env`** (no tocar):
+**`frontend/.env`:**
 ```env
-REACT_APP_BACKEND_URL=<provisionado por Emergent>
+REACT_APP_BACKEND_URL=http://localhost:8001
+DISABLE_ESLINT_PLUGIN=true
 ```
 
 ### Commands (dev)
 
-```bash
-# Restart services after env or dependency changes
-sudo supervisorctl restart backend
-sudo supervisorctl restart frontend
-sudo supervisorctl restart all
+#### Backend (FastAPI)
 
-# Tail logs
-tail -n 100 /var/log/supervisor/backend.*.log
-tail -n 100 /var/log/supervisor/frontend.*.log
+```powershell
+# Terminal 1 — desde la raíz del proyecto
+cd backend
 
-# Install new deps
-cd /app/backend && pip install <pkg> && pip freeze > requirements.txt
-cd /app/frontend && yarn add <pkg>
+# (Opcional) Crear y activar virtualenv
+python -m venv .venv
+.\.venv\Scripts\Activate
+
+# Instalar dependencias
+pip install -r requirements.txt
+
+# Iniciar servidor con hot reload
+uvicorn server:app --reload --port 8001
 ```
 
-Los servicios tienen **hot reload** activado. Solo hace falta reiniciar al:
-- Instalar dependencias
-- Modificar archivos `.env`
+Corre en `http://localhost:8001`. Endpoints disponibles: `GET /api/`, `GET /api/health`, `POST /api/contact`, `GET /api/contact`, `GET /api/stats/ping`.
+
+#### Frontend (React + CRACO)
+
+```powershell
+# Terminal 2 — desde la raíz del proyecto
+cd frontend
+
+# Instalar dependencias
+npm install
+
+# Iniciar dev server
+npm start
+```
+
+Corre en `http://localhost:3000` con hot reload. Apunta al backend en `http://localhost:8001`.
+
+> **Nota:** Si no necesitas enviar correos reales en desarrollo, puedes comentar `send_contact_email` en `backend/server.py:151` o usar un password SMTP inválido.
 
 ---
 
