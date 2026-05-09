@@ -55,12 +55,6 @@ export default function Skills() {
     return () => clearTimeout(timer);
   }, [active, list]);
 
-  useEffect(() => {
-    if (endRef.current) {
-      endRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    }
-  }, [currentLine, currentChar, status]);
-
   return (
     <section id="skills" className="relative py-28 px-6 lg:px-10 bg-[#070A14]">
       {/* Grid background */}
