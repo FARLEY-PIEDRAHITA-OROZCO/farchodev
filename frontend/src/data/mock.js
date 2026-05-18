@@ -87,6 +87,16 @@ export const projects = [
     image: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800&q=80",
     github: "#",
     demo: "#"
+  },
+  {
+    id: 7,
+    title: "Farchódev Academy",
+    category: "Full Stack",
+    description: "Plataforma educativa de programación moderna con 3D interactivo (Three.js/React Three Fiber), animaciones Fluidas (Framer Motion), y un sistema de diseño oscuro premium. Incluye cursos, dashboards, roadmaps y comunidad.",
+    tags: ["Next.js", "TypeScript", "TailwindCSS", "Three.js", "Framer Motion"],
+    image: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&q=80",
+    github: "https://github.com/FARLEY-PIEDRAHITA-OROZCO/farchodev-academy",
+    demo: "#"
   }
 ];
 
