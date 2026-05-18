@@ -97,6 +97,16 @@ export const projects = [
     image: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&q=80",
     github: "https://github.com/FARLEY-PIEDRAHITA-OROZCO/farchodev-academy",
     demo: "https://farchodev-academy.vercel.app/"
+  },
+  {
+    id: 8,
+    title: "Farchódev Blog",
+    category: "Full Stack",
+    description: "Blog técnico personal con sistema de diseño oscuro premium, animaciones fluidas (Framer Motion), textura noise, orbes flotantes, barra de progreso de lectura, tabla de contenidos con scroll spy y CMS headless (Sanity).",
+    tags: ["Next.js", "TypeScript", "TailwindCSS", "Framer Motion", "Sanity"],
+    image: "https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=800&q=80",
+    github: "https://github.com/FARLEY-PIEDRAHITA-OROZCO/farchodev-blog",
+    demo: "https://farchodev-blog.vercel.app/"
   }
 ];
 
