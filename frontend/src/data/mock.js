@@ -96,7 +96,7 @@ export const projects = [
     tags: ["Next.js", "TypeScript", "TailwindCSS", "Three.js", "Framer Motion"],
     image: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&q=80",
     github: "https://github.com/FARLEY-PIEDRAHITA-OROZCO/farchodev-academy",
-    demo: "#"
+    demo: "https://farchodev-academy.vercel.app/"
   }
 ];
 
