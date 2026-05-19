@@ -1473,10 +1473,10 @@ export function HackerRoom() {
 
     // ---------- Theme state ----------
     const state = {
-      lamp: themeRef.current === "night" ? 1 : 0,
+      lamp: themeRef.current === "dark" ? 1 : 0,
       ambient: 0.35,
       winI: 0.8,
-      curtainY: themeRef.current === "night" ? 1 : 0.04,
+      curtainY: themeRef.current === "dark" ? 1 : 0.04,
       winC: new THREE.Color(0xffffff),
       skyC: new THREE.Color(0x0a1025),
       wallC: new THREE.Color(0x202635),
@@ -1487,7 +1487,7 @@ export function HackerRoom() {
     };
 
     const getTargets = (t) => {
-      if (t === "day") {
+      if (t === "light") {
         return {
           lamp: 0,
           ambient: 0.85,

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { AnimatePresence, motion } from "framer-motion"
 import { MapPin, Mail, Shield, Bug, Code2, Expand } from "lucide-react"
 import { GitHubIcon, LinkedInIcon } from "@/components/brand-icons"
 import { Reveal } from "@/components/reveal"
@@ -85,16 +86,32 @@ export function About() {
         </div>
       </section>
 
-      {lightboxOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 backdrop-blur-sm p-4" onClick={() => setLightboxOpen(false)}>
-          <div className="relative max-w-2xl rounded-2xl border border-cyan-400/30 overflow-hidden" onClick={(e) => e.stopPropagation()}>
-            <button onClick={() => setLightboxOpen(false)} className="absolute top-3 right-3 w-8 h-8 rounded-lg bg-background/80 border border-white/10 flex items-center justify-center text-muted-foreground hover:text-foreground z-10">
-              <Expand className="w-4 h-4 rotate-45" />
-            </button>
-            <img src="/profile.jpg" alt={profile.name} className="w-full" />
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {lightboxOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 backdrop-blur-sm p-4"
+            onClick={() => setLightboxOpen(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+              className="relative max-w-2xl rounded-2xl border border-cyan-400/30 overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button onClick={() => setLightboxOpen(false)} className="absolute top-3 right-3 w-8 h-8 rounded-lg bg-background/80 border border-white/10 flex items-center justify-center text-muted-foreground hover:text-foreground z-10">
+                <Expand className="w-4 h-4 rotate-45" />
+              </button>
+              <img src="/profile.jpg" alt={profile.name} className="w-full" />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   )
 }
