@@ -1,8 +1,9 @@
 ﻿// @ts-nocheck
 "use client"
 
-import * as THREE from "three";
-import { useTheme } from "@/components/theme-provider";
+import { useRef, useEffect } from "react"
+import * as THREE from "three"
+import { useTheme } from "@/components/theme-provider"
 
 // -------------------- Canvas Texture helpers --------------------
 function makeCurtainTexture() {
